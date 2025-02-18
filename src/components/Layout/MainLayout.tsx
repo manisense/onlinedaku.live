@@ -1,5 +1,5 @@
 import React from 'react';
-import Header from '../Header';
+import MainNav from '../Navigation/MainNav';
 import Footer from '../Footer';
 
 interface MainLayoutProps {
@@ -10,7 +10,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col relative">
       <div className="sticky top-0 z-50 w-full">
-        <Header />
+        <MainNav />
       </div>
       <main className="flex-grow w-full mx-auto">
         {children}

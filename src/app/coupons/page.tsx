@@ -1,6 +1,8 @@
 "use client"
 
 import MainLayout from '@/components/Layout/MainLayout';
+import MainNav from '@/components/Navigation/MainNav';
+import SearchBar from '@/components/Search/SearchBar';
 import { useState } from 'react';
 import { FaCopy, FaCheck } from 'react-icons/fa';
 
@@ -70,6 +72,11 @@ export default function CouponsPage() {
 
   return (
     <MainLayout>
+        <div className="py-8 bg-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SearchBar />
+        </div>
+      </div>
       <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Latest Coupons</h1>
