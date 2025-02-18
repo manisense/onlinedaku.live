@@ -101,7 +101,7 @@ export default function DealsPage() {
                   <span className="text-sm text-gray-500">{deal.store}</span>
                 </div>
                 <div className="mt-4 flex justify-between items-center">
-                  <span className="text-sm text-gray-500">Expires: {new Date(deal.expiryDate).toLocaleDateString()}</span>
+                  <span className="text-sm text-gray-500">Expires: {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(deal.expiryDate))}</span>
                   <button className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300">
                     Get Deal
                   </button>

@@ -124,7 +124,7 @@ export default function CouponsPage() {
                   </button>
                 </div>
                 <div className="text-sm text-gray-500">
-                  <p>Expires: {new Date(coupon.expiryDate).toLocaleDateString()}</p>
+                  <p>Expires: {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(coupon.expiryDate))}</p>
                   <p className="mt-2 text-xs">{coupon.terms}</p>
                 </div>
               </div>

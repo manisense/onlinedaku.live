@@ -91,7 +91,7 @@ const FeaturedDeals = () => {
                     View Deal
                   </Link>
                 </div>
-                <p className="text-xs text-gray-500 mt-4">Expires: {new Date(deal.expiresAt).toLocaleDateString()}</p>
+                <p className="text-xs text-gray-500 mt-4">Expires: {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(deal.expiresAt))}</p>
               </div>
             </div>
           ))}
