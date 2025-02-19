@@ -1,5 +1,6 @@
 "use client"
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -19,7 +20,8 @@ const MainNav = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-2xl font-bold text-gray-800">
+              <Image src="/logo.svg" alt="OnlineDaku Logo" width={36} height={36} priority  />
+              <Link href="/" className="text-2xl ml-2 font-bold text-gray-800">
                 OnlineDaku
               </Link>
             </div>
