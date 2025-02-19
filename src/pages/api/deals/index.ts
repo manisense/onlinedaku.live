@@ -14,7 +14,7 @@ export default async function handler(
         const deals = await Deal.find({});
         res.status(200).json({ success: true, data: deals });
       } catch (error) {
-        res.status(400).json({ success: false });
+        res.status(400).json({ success: false, error });
       }
       break;
     case 'POST':
@@ -22,7 +22,7 @@ export default async function handler(
         const deal = await Deal.create(req.body);
         res.status(201).json({ success: true, data: deal });
       } catch (error) {
-        res.status(400).json({ success: false });
+        res.status(400).json({ success: false, error });
       }
       break;
     default:

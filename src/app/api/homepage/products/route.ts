@@ -19,7 +19,12 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Build query object
-    const query: any = {};
+    const query: {
+      category?: string;
+      $or?: Array<{
+        [key: string]: { $regex: string; $options: string };
+      }>;
+    } = {};
     if (category) query.category = category;
     if (search) {
       query.$or = [

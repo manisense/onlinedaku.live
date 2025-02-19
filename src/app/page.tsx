@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 import MainNav from '@/components/Navigation/MainNav';
 import SearchBar from '@/components/Search/SearchBar';
 import HeroSection from '@/components/Home/HeroSection';

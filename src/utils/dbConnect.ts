@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import '@/types/models';
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/onlinedaku';
 
@@ -6,10 +7,10 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-let cached = global.mongoose;
+let cached = globalThis.mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = globalThis.mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {

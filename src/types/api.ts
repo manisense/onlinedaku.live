@@ -6,11 +6,11 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-export interface DealsApiResponse extends ApiResponse<IDeal[]> {}
+export type DealsApiResponse = ApiResponse<IDeal[]>;
 
-export interface DealApiResponse extends ApiResponse<IDeal> {}
+export type DealApiResponse = ApiResponse<IDeal>;
 
-export interface UserApiResponse extends ApiResponse<IUser> {}
+export type UserApiResponse = ApiResponse<IUser>;
 
 export interface AuthApiResponse {
   success: boolean;

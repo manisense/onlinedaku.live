@@ -28,7 +28,11 @@ const Newsletter = () => {
       }
     } catch (error) {
       setStatus('error');
-      setMessage('Something went wrong. Please try again.');
+      const errorMessage = error instanceof Error 
+        ? `Error: ${error.message}`
+        : 'Something went wrong. Please try again.';
+      setMessage(errorMessage);
+      console.error('Newsletter subscription error:', error);
     }
   };
 

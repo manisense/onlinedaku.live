@@ -1,7 +1,6 @@
 "use client"
 
 import MainLayout from '@/components/Layout/MainLayout';
-import MainNav from '@/components/Navigation/MainNav';
 import SearchBar from '@/components/Search/SearchBar';
 import { useState } from 'react';
 import { FaCopy, FaCheck } from 'react-icons/fa';
@@ -57,7 +56,7 @@ const categories = ['All', 'Fashion', 'Electronics', 'Books', 'Home & Living', '
 
 export default function CouponsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('newest');
+
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const filteredCoupons = coupons.filter(coupon =>
