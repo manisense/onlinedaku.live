@@ -1,26 +1,30 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const isAdminRoute = req.nextUrl.pathname.startsWith('/admin');
+// Add this line to use Node.js runtime instead of Edge
+export const runtime = 'nodejs';
 
-    if (isAdminRoute && token?.role !== 'admin') {
-      return NextResponse.redirect(new URL('/admin/login', req.url));
-    }
+export function middleware(request: NextRequest) {
+  // Get the pathname
+  const path = request.nextUrl.pathname;
 
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token
+  // Check if it's an admin path (excluding login)
+  if (path.startsWith('/admin') && path !== '/admin/login') {
+    const token = request.cookies.get('adminToken');
+
+    // If no token found, redirect to login
+    if (!token) {
+      return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
-);
 
+  return NextResponse.next();
+}
+
+// Update the matcher to be more specific
 export const config = {
   matcher: [
-    '/admin/:path*'
+    '/admin/:path*',
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ]
 };

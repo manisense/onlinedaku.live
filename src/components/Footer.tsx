@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FaTelegram, FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
 
 const Footer: React.FC = () => {
   const categories = [
@@ -33,10 +34,10 @@ const Footer: React.FC = () => {
   ];
 
   const socialLinks = [
-    { name: 'Telegram', href: '#', icon: '/telegram.svg' },
-    { name: 'Facebook', href: '#', icon: '/facebook.svg' },
-    { name: 'Twitter', href: '#', icon: '/twitter.svg' },
-    { name: 'Instagram', href: '#', icon: '/instagram.svg' }
+    { name: 'Telegram', href: '#', icon: FaTelegram },
+    { name: 'Facebook', href: '#', icon: FaFacebook },
+    { name: 'Twitter', href: '#', icon: FaTwitter },
+    { name: 'Instagram', href: '#', icon: FaInstagram }
   ];
 
   return (
@@ -117,18 +118,21 @@ const Footer: React.FC = () => {
             <div className="mt-4">
               <h4 className="text-sm font-semibold mb-2">Follow Us</h4>
               <div className="flex space-x-4">
-                {socialLinks.map((social) => (
-                  <a
-                    key={social.name}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-300 hover:text-white transition-colors"
-                    aria-label={`Follow us on ${social.name}`}
-                  >
-                    <Image src={social.icon} alt={social.name} width={20} height={20} />
-                  </a>
-                ))}
+                {socialLinks.map((social) => {
+                  const Icon = social.icon;
+                  return (
+                    <a
+                      key={social.name}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-white transition-colors"
+                      aria-label={`Follow us on ${social.name}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
