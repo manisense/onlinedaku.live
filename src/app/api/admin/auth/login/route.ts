@@ -3,7 +3,6 @@ import dbConnect from '@/utils/dbConnect';
 import Admin from '@/models/Admin';
 import AdminActivity from '@/models/AdminActivity';
 import { sign } from 'jsonwebtoken';
-import type { IAdmin } from '@/types/admin';
 import mongoose from 'mongoose';
 
 // Add this line to disable edge runtime

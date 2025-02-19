@@ -12,7 +12,7 @@ export async function GET() {
     const connectionStates = ['disconnected', 'connected', 'connecting', 'disconnecting'];
     
     // List all collections
-    const collections = await mongoose.connection.db.listCollections().toArray();
+    const collections =  mongoose.connection.db ? await mongoose.connection.db.listCollections().toArray() : [];
     
     // Get all admins with basic info
     const admins = await Admin.find({}).lean();
