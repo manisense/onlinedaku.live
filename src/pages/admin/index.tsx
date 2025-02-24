@@ -1,6 +1,14 @@
 import { NextPage } from 'next';
 import AdminLayout from '@/admin/components/AdminLayout';
 
+export async function getStaticProps() {
+  return {
+    props: {},
+    // Use ISR with a reasonable revalidation time
+    revalidate: 300, // Revalidate every 5 minutes
+  }
+}
+
 const AdminDashboard: NextPage = () => {
   return (
     <AdminLayout>
