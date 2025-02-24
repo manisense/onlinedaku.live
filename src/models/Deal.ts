@@ -3,52 +3,66 @@ import mongoose from 'mongoose';
 const DealSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    required: [true, 'Title is required'],
+    trim: true,
   },
   description: {
     type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  originalPrice: {
-    type: Number,
-    required: true,
-  },
-  category: {
-    type: String,
-    required: true,
+    required: [true, 'Description is required'],
   },
   store: {
     type: String,
-    required: true,
+    required: [true, 'Store name is required'],
+    trim: true,
   },
-  expiryDate: {
+  category: {
+    type: String,
+    required: [true, 'Category is required'],
+    enum: ['Electronics', 'Fashion', 'Food', 'Travel', 'Other'],
+  },
+  discountType: {
+    type: String,
+    required: [true, 'Discount type is required'],
+    enum: ['percentage', 'fixed'],
+  },
+  discountValue: {
+    type: Number,
+    required: [true, 'Discount value is required'],
+    min: [0, 'Discount value cannot be negative'],
+  },
+  startDate: {
     type: Date,
-    required: true,
+    required: [true, 'Start date is required'],
   },
-  link: {
-    type: String,
-    required: true,
+  endDate: {
+    type: Date,
+    required: [true, 'End date is required'],
   },
-  image: {
-    type: String,
-    required: true,
-  },
-  isVerified: {
+  isActive: {
     type: Boolean,
-    default: false,
+    default: true,
+  },
+  couponCode: {
+    type: String,
+    trim: true,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Admin',
+    required: true,
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Admin',
   },
+}, {
+  timestamps: true,
 });
+
+// Add indexes for better query performance
+DealSchema.index({ store: 1 });
+DealSchema.index({ category: 1 });
+DealSchema.index({ isActive: 1 });
+DealSchema.index({ endDate: 1 });
 
 export default mongoose.models.Deal || mongoose.model('Deal', DealSchema);
