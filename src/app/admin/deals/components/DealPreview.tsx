@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 
 interface DealPreviewProps {
   deal: {
+    _id: string;
     title: string;
     description: string;
     store: string;
@@ -20,6 +21,8 @@ interface DealPreviewProps {
 export default function DealPreview({ deal, onClose }: DealPreviewProps) {
   const trackView = async () => {
     try {
+      if (!deal._id) return;
+
       const response = await fetch(`/api/deals/${deal._id}/track`, {
         method: 'POST',
         headers: {
@@ -27,8 +30,10 @@ export default function DealPreview({ deal, onClose }: DealPreviewProps) {
         },
         body: JSON.stringify({ type: 'view' }),
       });
+
       if (!response.ok) {
-        throw new Error('Failed to track view');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to track view');
       }
     } catch (error) {
       console.error('View tracking error:', error);
@@ -37,6 +42,8 @@ export default function DealPreview({ deal, onClose }: DealPreviewProps) {
 
   const trackClick = async () => {
     try {
+      if (!deal._id) return;
+
       const response = await fetch(`/api/deals/${deal._id}/track`, {
         method: 'POST',
         headers: {
@@ -44,8 +51,10 @@ export default function DealPreview({ deal, onClose }: DealPreviewProps) {
         },
         body: JSON.stringify({ type: 'click' }),
       });
+
       if (!response.ok) {
-        throw new Error('Failed to track click');
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to track click');
       }
     } catch (error) {
       console.error('Click tracking error:', error);
@@ -53,8 +62,8 @@ export default function DealPreview({ deal, onClose }: DealPreviewProps) {
   };
 
   useEffect(() => {
-    trackView();
-  }, []);
+    trackView().catch(console.error);
+  }, [deal._id]);
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">

@@ -9,6 +9,7 @@ const DealSchema = new mongoose.Schema({
   description: {
     type: String,
     required: [true, 'Description is required'],
+    trim: true,
   },
   store: {
     type: String,
@@ -18,17 +19,17 @@ const DealSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Category is required'],
-    enum: ['Electronics', 'Fashion', 'Food', 'Travel', 'Other'],
+    trim: true,
   },
   discountType: {
     type: String,
-    required: [true, 'Discount type is required'],
     enum: ['percentage', 'fixed'],
+    required: [true, 'Discount type is required'],
   },
   discountValue: {
     type: Number,
     required: [true, 'Discount value is required'],
-    min: [0, 'Discount value cannot be negative'],
+    min: 0,
   },
   startDate: {
     type: Date,
@@ -54,7 +55,8 @@ const DealSchema = new mongoose.Schema({
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Admin',
-  },
+    required: true,
+  }
 }, {
   timestamps: true,
 });
@@ -64,5 +66,10 @@ DealSchema.index({ store: 1 });
 DealSchema.index({ category: 1 });
 DealSchema.index({ isActive: 1 });
 DealSchema.index({ endDate: 1 });
+
+// Add these indexes for better performance
+DealSchema.index({ isActive: 1, startDate: 1, endDate: 1 });
+DealSchema.index({ createdAt: -1 });
+DealSchema.index({ category: 1 });
 
 export default mongoose.models.Deal || mongoose.model('Deal', DealSchema);

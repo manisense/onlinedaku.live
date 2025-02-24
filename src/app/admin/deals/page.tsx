@@ -153,7 +153,7 @@ export default function DealsAndCoupons() {
     }
   };
 
-  const handleAddDeal = async (dealData: any) => {
+  const handleAddDeal = async (dealData: Omit<Deal, '_id'>) => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch('/api/admin/deals', {
@@ -166,15 +166,26 @@ export default function DealsAndCoupons() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create deal');
+        throw new Error('Failed to add deal');
       }
 
-      // Refresh deals list
-      fetchDeals();
+      const { deal } = await response.json();
+      
+      // Update both deals and filteredDeals arrays with the new deal
+      setDeals(prevDeals => [deal, ...prevDeals]);
+      setFilteredDeals(prevDeals => [deal, ...prevDeals]);
+      
+      // Update stats
+      setStats(prevStats => ({
+        ...prevStats,
+        totalDeals: prevStats.totalDeals + 1,
+        activeDeals: deal.isActive ? prevStats.activeDeals + 1 : prevStats.activeDeals
+      }));
+
       setShowAddModal(false);
     } catch (err) {
       console.error(err);
-      throw new Error('Failed to create deal');
+      setError('Failed to add deal');
     }
   };
 
