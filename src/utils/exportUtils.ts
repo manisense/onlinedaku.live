@@ -1,5 +1,9 @@
-export function convertToCSV(data: any[], fields: string[]) {
-  const replacer = (key: string, value: any) => value === null ? '' : value;
+interface ExportableData {
+  [key: string]: string | number | boolean | Date | null;
+}
+
+export function convertToCSV(data: ExportableData[], fields: string[]) {
+  const replacer = (key: string, value: unknown) => value === null ? '' : value;
   const header = fields.join(',');
   const csv = data.map(row =>
     fields.map(field => 

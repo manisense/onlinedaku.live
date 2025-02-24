@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 
 interface BulkActionsProps {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaSort, FaSortUp, FaSortDown, FaEye } from 'react-icons/fa';
 import DealModal from './components/DealModal';
 import DealFilters from './components/DealFilters';
@@ -67,23 +67,16 @@ export default function DealsAndCoupons() {
   });
   const [previewDeal, setPreviewDeal] = useState<Deal | null>(null);
 
-  useEffect(() => {
-    fetchDeals();
-    fetchStats();
-  }, []);
-
-  const fetchDeals = async () => {
+  const fetchDeals = useCallback(async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(
-        `/api/admin/deals?page=${pagination.currentPage}&sortBy=${sortConfig.field}&sortOrder=${sortConfig.order}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      
+      const response = await fetch('/api/admin/deals', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
         throw new Error('Failed to fetch deals');
       }
@@ -91,18 +84,18 @@ export default function DealsAndCoupons() {
       const data = await response.json();
       setDeals(data.deals);
       setFilteredDeals(data.deals);
-      setPagination({
-        currentPage: data.pagination.currentPage,
-        totalPages: data.pagination.totalPages,
-        totalDeals: data.pagination.totalDeals
-      });
     } catch (err) {
-      setError('Failed to load deals');
       console.error(err);
+      setError('Failed to load deals');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDeals();
+    fetchStats();
+  }, [fetchDeals]);
 
   const fetchStats = async () => {
     try {
@@ -189,7 +182,7 @@ export default function DealsAndCoupons() {
     }
   };
 
-  const handleEditDeal = async (dealData: any) => {
+  const handleEditDeal = async (dealData: Omit<Deal, '_id'>) => {
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/admin/deals/${selectedDeal?._id}`, {

@@ -29,6 +29,7 @@ export async function verifyToken(req: NextRequest) {
       permissions: admin.getPermissions(),
     };
   } catch (error) {
+    console.error('Error verifying token:', error);
     return null;
   }
 } 

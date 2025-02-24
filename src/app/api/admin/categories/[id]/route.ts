@@ -3,18 +3,15 @@ import dbConnect from '@/utils/dbConnect';
 import Category from '@/models/Category';
 import { verifyToken } from '@/utils/auth';
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, {params}:{ params: Promise<{id: string}>}) {
   try {
-    const admin = await verifyToken(req);
+    const admin = await verifyToken(request);
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
-    const body = await req.json();
+    const { id } = await params;
+    const body = await request.json();
 
     await dbConnect();
     
@@ -39,17 +36,14 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, {params}:{ params: Promise<{id: string}>}) {
   try {
-    const admin = await verifyToken(req);
+    const admin = await verifyToken(request);
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     await dbConnect();
     

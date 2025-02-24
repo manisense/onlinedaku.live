@@ -2,13 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/utils/dbConnect';
 import DealAnalytics from '@/models/DealAnalytics';
 
+interface DailyStat {
+  date: Date;
+  views: number;
+  clicks: number;
+  conversions: number;
+}
+
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
-    const { type } = await req.json();
+    const { id } = await params;
+    const { type } = await request.json();
 
     if (!['view', 'click', 'conversion'].includes(type)) {
       return NextResponse.json(
@@ -39,8 +46,8 @@ export async function POST(
     analytics[type === 'view' ? 'views' : type === 'click' ? 'clicks' : 'conversions']++;
 
     // Update or create daily stats
-    let dailyStat = analytics.dailyStats.find(
-      stat => new Date(stat.date).getTime() === today.getTime()
+    const dailyStat = analytics.dailyStats.find(
+      (stat: DailyStat) => new Date(stat.date).getTime() === today.getTime()
     );
 
     if (dailyStat) {

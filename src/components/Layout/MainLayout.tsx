@@ -1,7 +1,7 @@
 import React from 'react';
 import MainNav from '../Navigation/MainNav';
 import Footer from '../Footer';
-import Link from 'next/link';
+
 
 interface MainLayoutProps {
   children: React.ReactNode;

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/utils/dbConnect';
 import Deal from '@/models/Deal';
-import DealAnalytics from '@/models/DealAnalytics';
 import { verifyToken } from '@/utils/auth';
 
 export async function GET(req: NextRequest) {

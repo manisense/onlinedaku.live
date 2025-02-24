@@ -3,25 +3,42 @@
 import { useState, useEffect } from 'react';
 import { FaTimes } from 'react-icons/fa';
 
+interface Deal {
+  _id: string;
+  title: string;
+  description: string;
+  store: string;
+  category: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+  couponCode?: string;
+}
+
+type DealFormData = Omit<Deal, '_id'>;
+
 interface DealModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (dealData: any) => Promise<void>;
-  deal?: any;
+  onSubmit: (data: DealFormData) => Promise<void>;
+  deal?: Deal | null;
 }
 
 const CATEGORIES = ['Electronics', 'Fashion', 'Food', 'Travel', 'Other'];
 
 export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<DealFormData>({
     title: '',
     description: '',
     store: '',
-    category: 'Other',
+    category: '',
     discountType: 'percentage',
-    discountValue: '',
-    startDate: '',
-    endDate: '',
+    discountValue: 0,
+    startDate: new Date().toISOString().split('T')[0],
+    endDate: new Date().toISOString().split('T')[0],
+    isActive: true,
     couponCode: ''
   });
   const [loading, setLoading] = useState(false);
@@ -35,13 +52,22 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
         store: deal.store,
         category: deal.category,
         discountType: deal.discountType,
-        discountValue: deal.discountValue.toString(),
+        discountValue: deal.discountValue,
         startDate: new Date(deal.startDate).toISOString().split('T')[0],
         endDate: new Date(deal.endDate).toISOString().split('T')[0],
+        isActive: deal.isActive,
         couponCode: deal.couponCode || ''
       });
     }
   }, [deal]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,13 +75,25 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
     setLoading(true);
 
     try {
-      await onSubmit({
-        ...formData,
-        discountValue: Number(formData.discountValue)
-      });
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save deal');
+      await onSubmit(formData);
+      if (!deal) {
+        // Reset form only for new deals
+        setFormData({
+          title: '',
+          description: '',
+          store: '',
+          category: '',
+          discountType: 'percentage',
+          discountValue: 0,
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date().toISOString().split('T')[0],
+          isActive: true,
+          couponCode: ''
+        });
+      }
+    } catch (error: unknown) {
+      console.error(error);
+      setError(error instanceof Error ? error.message : 'Failed to save deal');
     } finally {
       setLoading(false);
     }
@@ -86,7 +124,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
               type="text"
               required
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={handleChange}
+              name="title"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
@@ -96,7 +135,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
             <textarea
               required
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={handleChange}
+              name="description"
               rows={3}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
@@ -108,7 +148,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
               type="text"
               required
               value={formData.store}
-              onChange={(e) => setFormData({ ...formData, store: e.target.value })}
+              onChange={handleChange}
+              name="store"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
@@ -117,7 +158,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
             <label className="block text-sm font-medium text-gray-700">Category</label>
             <select
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              onChange={handleChange}
+              name="category"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               {CATEGORIES.map((category) => (
@@ -133,7 +175,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
               <label className="block text-sm font-medium text-gray-700">Discount Type</label>
               <select
                 value={formData.discountType}
-                onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
+                onChange={handleChange}
+                name="discountType"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="percentage">Percentage</option>
@@ -148,7 +191,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
                 required
                 min="0"
                 value={formData.discountValue}
-                onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                onChange={handleChange}
+                name="discountValue"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
@@ -161,7 +205,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
                 type="date"
                 required
                 value={formData.startDate}
-                onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                onChange={handleChange}
+                name="startDate"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
@@ -172,7 +217,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
                 type="date"
                 required
                 value={formData.endDate}
-                onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                onChange={handleChange}
+                name="endDate"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
@@ -183,7 +229,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
             <input
               type="text"
               value={formData.couponCode}
-              onChange={(e) => setFormData({ ...formData, couponCode: e.target.value })}
+              onChange={handleChange}
+              name="couponCode"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>

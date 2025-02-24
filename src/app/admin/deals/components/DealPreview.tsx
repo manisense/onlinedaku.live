@@ -1,7 +1,7 @@
 'use client';
 
 import { FaTag, FaClock, FaStore, FaExternalLinkAlt } from 'react-icons/fa';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 interface DealPreviewProps {
   deal: {
@@ -19,7 +19,7 @@ interface DealPreviewProps {
 }
 
 export default function DealPreview({ deal, onClose }: DealPreviewProps) {
-  const trackView = async () => {
+  const trackView = useCallback(async () => {
     try {
       if (!deal._id) return;
 
@@ -38,7 +38,7 @@ export default function DealPreview({ deal, onClose }: DealPreviewProps) {
     } catch (error) {
       console.error('View tracking error:', error);
     }
-  };
+  }, [deal._id]);
 
   const trackClick = async () => {
     try {
@@ -62,8 +62,8 @@ export default function DealPreview({ deal, onClose }: DealPreviewProps) {
   };
 
   useEffect(() => {
-    trackView().catch(console.error);
-  }, [deal._id]);
+    trackView();
+  }, [trackView]);
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">

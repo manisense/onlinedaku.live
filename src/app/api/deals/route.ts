@@ -6,16 +6,16 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const searchParams = req.nextUrl.searchParams;
-    const category = searchParams.get('category') || 'All';
+    //const category = searchParams.get('category') || 'All';
     const sortBy = searchParams.get('sortBy') || 'newest';
     
     const now = new Date();
     
-    let query = {
+    const query = {
       isActive: true,
       startDate: { $lte: now },
       endDate: { $gt: now }
-    };
+    } as const;
     // if (category !== 'All') {
     //   query = { ...query, category: category };
     // }

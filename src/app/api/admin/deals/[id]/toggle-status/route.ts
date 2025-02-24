@@ -4,17 +4,17 @@ import Deal from '@/models/Deal';
 import { verifyToken } from '@/utils/auth';
 
 export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const admin = await verifyToken(req);
+    const admin = await verifyToken(request);
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
-    const { isActive } = await req.json();
+    const { id } = await params;
+    const { isActive } = await request.json();
 
     await dbConnect();
     
