@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { useLoading } from '@/context/LoadingContext';
 import Loader from '@/components/ui/Loader';
@@ -23,32 +23,39 @@ export default function DealsPage() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const loadingContext = useLoading();
-
-  const fetchDeals = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      loadingContext.showLoader('Loading awesome deals for you...');
-      
-      const response = await fetch('/api/deals');
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setDeals(data.deals);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load deals');
-    } finally {
-      setIsLoading(false);
-      loadingContext.hideLoader();
-    }
-  }, [loadingContext]);
+  const { showLoader, hideLoader } = useLoading();
+  
+  // Use a ref to prevent infinite fetching
+  const fetchedRef = useRef(false);
 
   useEffect(() => {
+    // Only fetch once
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+    
+    async function fetchDeals() {
+      try {
+        setIsLoading(true);
+        showLoader('Loading awesome deals for you...');
+        
+        const response = await fetch('/api/deals');
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setDeals(data.deals || []);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load deals');
+      } finally {
+        setIsLoading(false);
+        hideLoader();
+      }
+    }
+
     fetchDeals();
-  }, [fetchDeals]);
+  }, []); // Empty dependency array with ref check prevents continuous requests
 
   return (
     <MainLayout>
