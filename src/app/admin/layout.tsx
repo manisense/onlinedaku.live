@@ -12,6 +12,8 @@ import {
   FaBars,
   FaTimes
 } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { confirmLogout } from '@/utils/confirmDialog';
 
 export default function AdminLayout({
   children,
@@ -75,10 +77,28 @@ export default function AdminLayout({
     checkAuth();
   }, [pathname, router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    setIsAuthenticated(false);
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    const confirmed = await confirmLogout();
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      if (token) {
+        await fetch('/api/admin/auth/logout', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+      localStorage.removeItem('adminToken');
+      setIsAuthenticated(false);
+      toast.success('Logged out successfully');
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Failed to logout');
+    }
   };
 
   // Show loading state
@@ -163,4 +183,4 @@ export default function AdminLayout({
       </div>
     </div>
   );
-} 
+}

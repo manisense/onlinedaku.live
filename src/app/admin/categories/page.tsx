@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import { confirmDelete } from '@/utils/confirmDialog';
 
 interface Category {
   _id: string;
@@ -78,9 +80,8 @@ export default function CategoriesManagement() {
   };
 
   const handleDelete = async (categoryId: string) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) {
-      return;
-    }
+    const confirmed = await confirmDelete('category');
+    if (!confirmed) return;
 
     try {
       const token = localStorage.getItem('adminToken');
@@ -95,10 +96,11 @@ export default function CategoriesManagement() {
         throw new Error('Failed to delete category');
       }
 
+      toast.success('Category deleted successfully');
       fetchCategories();
     } catch (err) {
       console.error(err);
-      setError('Failed to delete category');
+      toast.error('Failed to delete category');
     }
   };
 
@@ -260,4 +262,4 @@ export default function CategoriesManagement() {
       )}
     </div>
   );
-} 
+}

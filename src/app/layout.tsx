@@ -1,33 +1,42 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import "./globals.css";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const geist = Geist({
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Online Daku",
-  description: "Online Daku: Find the best deals on products from all over the India.",
+  description: "Find the best deals and coupons",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={geist.className}>
         {children}
+        <ToastContainer
+          position="top-center"
+          autoClose={3000}
+          limit={1}
+          closeOnClick={true}
+          draggable={false}
+          closeButton={true}
+          hideProgressBar={true}
+          theme="light"
+          style={{
+            width: 'auto',
+            maxWidth: '100%',
+            color: 'black',
+          }}
+        />
       </body>
     </html>
   );

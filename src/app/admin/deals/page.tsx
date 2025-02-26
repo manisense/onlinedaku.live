@@ -2,14 +2,18 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaSort, FaSortUp, FaSortDown, FaEye } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import DealModal from './components/DealModal';
 import DealFilters from './components/DealFilters';
 import Pagination from './components/Pagination';
 import DealStats from './components/DealStats';
-import BulkActions from './components/BulkActions';
+// import BulkActions from './components/BulkActions';
 import ExportButton from './components/ExportButton';
 import DealPreview from './components/DealPreview';
 import Loader from '@/components/ui/Loader';
+import { confirmDelete, confirmStatusChange } from '@/utils/confirmDialog';
+
+const TOAST_TIMEOUT = 3000;
 
 interface Deal {
   _id: string;
@@ -119,6 +123,12 @@ export default function DealsAndCoupons() {
   };
 
   const handleStatusToggle = async (dealId: string, currentStatus: boolean) => {
+    const confirmed = await confirmStatusChange(
+      currentStatus ? 'deactivate' : 'activate',
+      'deal'
+    );
+    if (!confirmed) return;
+
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch(`/api/admin/deals/${dealId}/toggle-status`, {
@@ -141,9 +151,14 @@ export default function DealsAndCoupons() {
       setFilteredDeals(filteredDeals.map(deal => 
         deal._id === dealId ? { ...deal, isActive: !currentStatus } : deal
       ));
+      toast.success(`Deal ${currentStatus ? 'deactivated' : 'activated'} successfully`, {
+        autoClose: TOAST_TIMEOUT
+      });
     } catch (err) {
       console.error(err);
-      setError('Failed to update deal status');
+      toast.error('Failed to update deal status', {
+        autoClose: TOAST_TIMEOUT
+      });
     }
   };
 
@@ -210,9 +225,8 @@ export default function DealsAndCoupons() {
   };
 
   const handleDelete = async (dealId: string) => {
-    if (!window.confirm('Are you sure you want to delete this deal?')) {
-      return;
-    }
+    const confirmed = await confirmDelete('deal');
+    if (!confirmed) return;
 
     try {
       const token = localStorage.getItem('adminToken');
@@ -227,12 +241,16 @@ export default function DealsAndCoupons() {
         throw new Error('Failed to delete deal');
       }
 
-      // Remove deal from local state
+      toast.success('Deal deleted successfully', {
+        autoClose: TOAST_TIMEOUT
+      });
       setDeals(deals.filter(deal => deal._id !== dealId));
       setFilteredDeals(filteredDeals.filter(deal => deal._id !== dealId));
     } catch (err) {
       console.error(err);
-      setError('Failed to delete deal');
+      toast.error('Failed to delete deal', {
+        autoClose: TOAST_TIMEOUT
+      });
     }
   };
 
@@ -265,65 +283,65 @@ export default function DealsAndCoupons() {
     fetchDeals();
   };
 
-  const handleBulkDelete = async () => {
-    if (!window.confirm(`Are you sure you want to delete ${selectedDeals.length} deals?`)) {
-      return;
-    }
+  // const handleBulkDelete = async () => {
+  //   const confirmed = await confirmBulkDelete(selectedDeals.length, 'deals');
+  //   if (!confirmed) return;
 
-    try {
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/admin/deals/bulk', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'delete',
-          dealIds: selectedDeals
-        }),
-      });
+  //   try {
+  //     const token = localStorage.getItem('adminToken');
+  //     const response = await fetch('/api/admin/deals/bulk', {
+  //       method: 'POST',
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         action: 'delete',
+  //         dealIds: selectedDeals
+  //       }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error('Failed to delete deals');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Failed to delete deals');
+  //     }
 
-      setSelectedDeals([]);
-      fetchDeals();
-      fetchStats();
-    } catch (err) {
-      console.error(err);
-      setError('Failed to delete deals');
-    }
-  };
+  //     setSelectedDeals([]);
+  //     fetchDeals();
+  //     fetchStats();
+  //     toast.success('Selected deals deleted successfully');
+  //   } catch (err) {
+  //     console.error(err);
+  //     toast.error('Failed to delete deals');
+  //   }
+  // };
 
-  const handleBulkStatusChange = async (status: boolean) => {
-    try {
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch('/api/admin/deals/bulk', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: status ? 'activate' : 'deactivate',
-          dealIds: selectedDeals
-        }),
-      });
+  // const handleBulkStatusChange = async (status: boolean) => {
+  //   try {
+  //     const token = localStorage.getItem('adminToken');
+  //     const response = await fetch('/api/admin/deals/bulk', {
+  //       method: 'POST',
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         action: status ? 'activate' : 'deactivate',
+  //         dealIds: selectedDeals
+  //       }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error(`Failed to ${status ? 'activate' : 'deactivate'} deals`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`Failed to ${status ? 'activate' : 'deactivate'} deals`);
+  //     }
 
-      setSelectedDeals([]);
-      fetchDeals();
-      fetchStats();
-    } catch (err) {
-      console.error(err);
-      setError(`Failed to ${status ? 'activate' : 'deactivate'} deals`);
-    }
-  };
+  //     setSelectedDeals([]);
+  //     fetchDeals();
+  //     fetchStats();
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError(`Failed to ${status ? 'activate' : 'deactivate'} deals`);
+  //   }
+  // };
 
   if (loading) {
     return (
@@ -497,12 +515,12 @@ export default function DealsAndCoupons() {
       />
 
       <DealStats {...stats} />
-      <BulkActions
+      {/* <BulkActions
         selectedDeals={selectedDeals}
         onBulkDelete={handleBulkDelete}
         onBulkStatusChange={handleBulkStatusChange}
         onClearSelection={() => setSelectedDeals([])}
-      />
+      /> */}
 
       {previewDeal && (
         <DealPreview
