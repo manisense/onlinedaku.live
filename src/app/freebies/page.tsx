@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import MainLayout from '@/components/Layout/MainLayout';
 import SearchBar from '@/components/Search/SearchBar';
+import { useLoading } from '@/context/LoadingContext';
 
 const freebies = [
   {
@@ -57,6 +58,19 @@ const categories = ['All', 'Subscription', 'Education', 'Entertainment', 'Books'
 export default function FreebiesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('newest');
+  const { showLoader, hideLoader } = useLoading();
+
+  useEffect(() => {
+    // Simulate loading for demonstration
+    showLoader('Finding free stuff for you...');
+    
+    // Simulate API call
+    const timer = setTimeout(() => {
+      hideLoader();
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [showLoader, hideLoader]);
 
   const filteredFreebies = freebies.filter(freebie =>
     selectedCategory === 'All' ? true : freebie.category === selectedCategory

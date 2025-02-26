@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import MainLayout from '@/components/Layout/MainLayout';
 import SearchBar from '@/components/Search/SearchBar';
+import { useLoading } from '@/context/LoadingContext';
 
 const stores = [
   {
@@ -79,6 +80,19 @@ const categories = ['All', 'Multi-Category', 'Electronics', 'Fashion', 'Home & G
 export default function StoresPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
+  const { showLoader, hideLoader } = useLoading();
+  
+  useEffect(() => {
+    // Simulate loading for demonstration
+    showLoader('Loading store information...');
+    
+    // Simulate API call
+    const timer = setTimeout(() => {
+      hideLoader();
+    }, 1500);
+    
+    return () => clearTimeout(timer);
+  }, [showLoader, hideLoader]);
 
   const filteredStores = stores.filter(store =>
     selectedCategory === 'All' ? true : store.category === selectedCategory

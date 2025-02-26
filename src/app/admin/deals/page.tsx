@@ -9,6 +9,7 @@ import DealStats from './components/DealStats';
 import BulkActions from './components/BulkActions';
 import ExportButton from './components/ExportButton';
 import DealPreview from './components/DealPreview';
+import Loader from '@/components/ui/Loader';
 
 interface Deal {
   _id: string;
@@ -327,7 +328,7 @@ export default function DealsAndCoupons() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading...</div>
+        <Loader size="large" text="Loading deals data..." />
       </div>
     );
   }
@@ -511,4 +512,4 @@ export default function DealsAndCoupons() {
       )}
     </div>
   );
-} 
+}

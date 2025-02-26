@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect } from 'react';
-import { FaTag, FaStore, FaClock } from 'react-icons/fa';
+import { useState, useEffect, useCallback } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
+import { useLoading } from '@/context/LoadingContext';
+import Loader from '@/components/ui/Loader';
 import SearchBar from '@/components/Search/SearchBar';
 
 interface Deal {
@@ -20,18 +21,18 @@ interface Deal {
 
 export default function DealsPage() {
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const loadingContext = useLoading();
 
-  useEffect(() => {
-    fetchDeals();
-  }, []);
-
-  const fetchDeals = async () => {
+  const fetchDeals = useCallback(async () => {
     try {
+      setIsLoading(true);
+      loadingContext.showLoader('Loading awesome deals for you...');
+      
       const response = await fetch('/api/deals');
       if (!response.ok) {
-        throw new Error('Failed to fetch deals');
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
       const data = await response.json();
@@ -40,12 +41,14 @@ export default function DealsPage() {
       console.error(err);
       setError('Failed to load deals');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+      loadingContext.hideLoader();
     }
-  };
+  }, [loadingContext]);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  useEffect(() => {
+    fetchDeals();
+  }, [fetchDeals]);
 
   return (
     <MainLayout>
@@ -58,53 +61,43 @@ export default function DealsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Latest Deals</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {deals.map((deal) => (
-              <div key={deal._id} className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">{deal.title}</h2>
-                <div className="flex items-center text-gray-600 mb-4">
-                  <FaStore className="mr-2" />
-                  <span>{deal.store}</span>
-                  <FaTag className="ml-6 mr-2" />
-                  <span>
-                    {deal.discountType === 'percentage' 
-                      ? `${deal.discountValue}% OFF`
-                      : `$${deal.discountValue} OFF`}
-                  </span>
-                </div>
-                <p className="text-gray-600 mb-4">{deal.description}</p>
-                {deal.couponCode && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Coupon Code
-                    </label>
-                    <div className="flex">
-                      <input
-                        type="text"
-                        readOnly
-                        value={deal.couponCode}
-                        className="flex-1 block rounded-l-md border-gray-300 bg-gray-50"
-                      />
-                      <button
-                        onClick={() => navigator.clipboard.writeText(deal.couponCode!)}
-                        className="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-700 hover:bg-gray-100"
-                      >
-                        Copy
-                      </button>
+          {error && (
+            <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+              {error}
+            </div>
+          )}
+          
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader size="medium" text="Finding deals for you..." />
+            </div>
+          ) : deals.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-gray-500">No deals found</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {deals.map((deal) => (
+                <div key={deal._id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900">{deal.title}</h3>
+                    <p className="text-sm text-gray-500">{deal.store}</p>
+                    <p className="text-gray-600 text-sm mt-2 mb-4">{deal.description}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {deal.discountType === 'percentage' ? `${deal.discountValue}%` : `$${deal.discountValue}`} OFF
+                      </span>
+                      <p className="text-xs text-gray-500">
+                        Expires: {new Date(deal.endDate).toLocaleDateString()}
+                      </p>
                     </div>
                   </div>
-                )}
-                <div className="flex items-center text-sm text-gray-500">
-                  <FaClock className="mr-2" />
-                  <span>
-                    Valid until {new Date(deal.endDate).toLocaleDateString()}
-                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </MainLayout>
   );
-} 
+}
