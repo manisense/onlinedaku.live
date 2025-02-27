@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { toast } from 'react-toastify';
-import { FaExclamationTriangle } from 'react-icons/fa';
+import toast from 'react-hot-toast';
+import { FaExclamationTriangle, FaTrash, FaSignOutAlt } from 'react-icons/fa';
 
 interface ConfirmOptions {
   title: string;
@@ -24,31 +24,51 @@ const ConfirmDialog = ({
   onConfirm: () => void;
   onCancel: () => void;
 }) => {
-  const buttonStyles = {
-    danger: 'bg-red-600 hover:bg-red-700',
-    warning: 'bg-yellow-600 hover:bg-yellow-700',
-    info: 'bg-blue-600 hover:bg-blue-700'
+  const styles = {
+    danger: {
+      icon: <FaTrash className="h-5 w-5 text-red-400" />,
+      button: 'bg-red-500 hover:bg-red-600 text-gray-100',
+      wrapper: 'border-red-700 bg-gray-800'
+    },
+    warning: {
+      icon: <FaExclamationTriangle className="h-5 w-5 text-yellow-400" />,
+      button: 'bg-yellow-500 hover:bg-yellow-600 text-gray-900',
+      wrapper: 'border-yellow-700 bg-gray-800'
+    },
+    info: {
+      icon: <FaSignOutAlt className="h-5 w-5 text-blue-400" />,
+      button: 'bg-blue-500 hover:bg-blue-600 text-gray-100',
+      wrapper: 'border-blue-700 bg-gray-800'
+    }
   };
 
   return (
-    <div className="relative min-w-[320px] bg-white p-6 rounded-lg shadow-xl">
-      <div className="flex flex-col items-center">
-        <FaExclamationTriangle className="h-12 w-12 text-yellow-500 mb-4" />
-        <h3 className="text-lg font-medium text-center mb-2">{title}</h3>
-        <p className="text-sm text-gray-500 text-center mb-6">{message}</p>
-        <div className="flex justify-center space-x-4 w-full">
-          <button
-            onClick={onCancel}
-            className="flex-1 px-4 py-2 text-sm font-medium text-red-400 bg-gray-400 border border-gray-300 rounded-md hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`flex-1 px-4 py-2  text-sm font-medium text-blue-400 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 ${buttonStyles[type]}`}
-          >
-            {confirmText}
-          </button>
+    <div className={`rounded-lg shadow-xl border ${styles[type].wrapper} p-4 w-[320px]`}>
+      <div className="flex items-start space-x-3">
+        <div className="flex-shrink-0 pt-0.5">
+          {styles[type].icon}
+        </div>
+        <div className="flex-1">
+          <h3 className="text-sm font-medium text-gray-100">
+            {title}
+          </h3>
+          <p className="mt-1 text-sm text-gray-300">
+            {message}
+          </p>
+          <div className="mt-4 flex justify-end space-x-3">
+            <button
+              onClick={onCancel}
+              className="px-3 py-1 text-sm text-gray-300 hover:text-gray-100 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
+            >
+              {cancelText}
+            </button>
+            <button
+              onClick={onConfirm}
+              className={`px-3 py-1 text-sm rounded-md transition-colors ${styles[type].button}`}
+            >
+              {confirmText}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -57,44 +77,48 @@ const ConfirmDialog = ({
 
 export const confirm = (options: ConfirmOptions): Promise<boolean> => {
   return new Promise((resolve) => {
-    const toastId = toast(
-      <ConfirmDialog
-        {...options}
-        onConfirm={() => {
-          toast.dismiss(toastId);
-          resolve(true);
-          // Show success notification with timeout
-        //   toast.success('Action confirmed', { autoClose: NOTIFICATION_TIMEOUT });
-        }}
-        onCancel={() => {
-          toast.dismiss(toastId);
-          resolve(false);
-          // Show cancel notification with timeout
-        //   toast.info('Action cancelled', { autoClose: NOTIFICATION_TIMEOUT });
-        }}
-      />,
+    const toastId = toast.custom(
+      (t) => (
+        <div 
+          className={`${t.visible ? 'animate-fade-in' : 'animate-fade-out'}`}
+          style={{ background: 'transparent' }}
+        >
+          <ConfirmDialog
+            {...options}
+            onConfirm={() => {
+              toast.dismiss(toastId);
+              resolve(true);
+            }}
+            onCancel={() => {
+              toast.dismiss(toastId);
+              resolve(false);
+            }}
+          />
+        </div>
+      ),
       {
+        duration: Infinity,
         position: 'top-center',
-        autoClose: false,
-        closeButton: false,
-        closeOnClick: false,
-        draggable: false,
-        className: 'confirm-dialog-container',
-        style: { 
+        style: {
           background: 'transparent',
           boxShadow: 'none',
-          width: 'auto',
-          padding: '0',
-          margin: '0'
         },
-        progressClassName: "confirm-dialog-progress"
       }
     );
+
+    // Add keyboard support for Escape key
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        toast.dismiss(toastId);
+        resolve(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
   });
 };
 
 export const confirmDelete = (itemName: string) => confirm({
-  title: 'Delete Confirmation',
+  title: `Delete ${itemName}`,
   message: `Are you sure you want to delete this ${itemName}?`,
   confirmText: 'Delete',
   cancelText: 'Cancel',
@@ -102,53 +126,19 @@ export const confirmDelete = (itemName: string) => confirm({
 });
 
 export const confirmLogout = () => confirm({
-  title: 'Logout Confirmation',
-  message: 'Are you sure you want to end your session?',
-  confirmText: 'Logout',
-  cancelText: 'Stay',
-  type: 'warning'
+  title: 'Sign Out',
+  message: 'Are you sure you want to sign out?',
+  confirmText: 'Sign Out',
+  cancelText: 'Cancel',
+  type: 'info'
 });
 
 export const confirmStatusChange = (action: string, itemName: string) => confirm({
-  title: 'Status Change Confirmation',
-  message: `Are you sure you want to ${action} this ${itemName}?`,
-  confirmText: 'Yes, proceed',
+  title: `${action} ${itemName}`,
+  message: `Are you sure you want to ${action.toLowerCase()} this ${itemName}?`,
+  confirmText: 'Confirm',
   cancelText: 'Cancel',
   type: 'warning'
 });
-
-// Add these styles to your globals.css
-const styles = `
-.confirm-dialog-container {
-  max-width: 400px !important;
-  width: auto !important;
-  padding: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.confirm-dialog-body {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.confirm-dialog-progress {
-  background: transparent !important;
-}
-
-.Toastify__toast {
-  padding: 0 !important;
-  min-height: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-}
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = styles;
-  document.head.appendChild(styleSheet);
-}
 
 export default confirm;

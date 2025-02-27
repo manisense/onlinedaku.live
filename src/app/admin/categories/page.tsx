@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import {  toast } from 'react-hot-toast';
 import { confirmDelete } from '@/utils/confirmDialog';
 
 interface Category {

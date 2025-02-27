@@ -12,7 +12,7 @@ import {
   FaBars,
   FaTimes
 } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { confirmLogout } from '@/utils/confirmDialog';
 
 export default function AdminLayout({

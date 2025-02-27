@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { FaPlus, FaEdit, FaTrash, FaCheck, FaTimes, FaSort, FaSortUp, FaSortDown, FaEye } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import DealModal from './components/DealModal';
 import DealFilters from './components/DealFilters';
 import Pagination from './components/Pagination';
@@ -12,8 +12,6 @@ import ExportButton from './components/ExportButton';
 import DealPreview from './components/DealPreview';
 import Loader from '@/components/ui/Loader';
 import { confirmDelete, confirmStatusChange } from '@/utils/confirmDialog';
-
-const TOAST_TIMEOUT = 3000;
 
 interface Deal {
   _id: string;
@@ -151,14 +149,10 @@ export default function DealsAndCoupons() {
       setFilteredDeals(filteredDeals.map(deal => 
         deal._id === dealId ? { ...deal, isActive: !currentStatus } : deal
       ));
-      toast.success(`Deal ${currentStatus ? 'deactivated' : 'activated'} successfully`, {
-        autoClose: TOAST_TIMEOUT
-      });
+      toast.success(`Deal ${currentStatus ? 'deactivated' : 'activated'} successfully`);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to update deal status', {
-        autoClose: TOAST_TIMEOUT
-      });
+      toast.error('Failed to update deal status');
     }
   };
 
@@ -241,16 +235,12 @@ export default function DealsAndCoupons() {
         throw new Error('Failed to delete deal');
       }
 
-      toast.success('Deal deleted successfully', {
-        autoClose: TOAST_TIMEOUT
-      });
+      toast.success('Deal deleted successfully');
       setDeals(deals.filter(deal => deal._id !== dealId));
       setFilteredDeals(filteredDeals.filter(deal => deal._id !== dealId));
     } catch (err) {
       console.error(err);
-      toast.error('Failed to delete deal', {
-        autoClose: TOAST_TIMEOUT
-      });
+      toast.error('Failed to delete deal');
     }
   };
 
