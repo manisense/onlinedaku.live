@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FaTelegram, FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaTelegram, FaInstagram } from 'react-icons/fa';
 
 const Footer: React.FC = () => {
   const categories = [
@@ -34,10 +34,8 @@ const Footer: React.FC = () => {
   ];
 
   const socialLinks = [
-    { name: 'Telegram', href: '#', icon: FaTelegram },
-    { name: 'Facebook', href: '#', icon: FaFacebook },
-    { name: 'Twitter', href: '#', icon: FaTwitter },
-    { name: 'Instagram', href: '#', icon: FaInstagram }
+    { name: 'Telegram', href: 'https://t.me/onlinedaku', icon: FaTelegram },
+    { name: 'Instagram', href: 'https://www.instagram.com/onlinedaku/', icon: FaInstagram }
   ];
 
   return (
