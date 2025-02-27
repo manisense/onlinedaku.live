@@ -6,7 +6,6 @@ export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const searchParams = req.nextUrl.searchParams;
-    //const category = searchParams.get('category') || 'All';
     const sortBy = searchParams.get('sortBy') || 'newest';
     
     const now = new Date();
@@ -16,9 +15,6 @@ export async function GET(req: NextRequest) {
       startDate: { $lte: now },
       endDate: { $gt: now }
     } as const;
-    // if (category !== 'All') {
-    //   query = { ...query, category: category };
-    // }
 
     let sort = {};
     switch (sortBy) {
@@ -36,12 +32,15 @@ export async function GET(req: NextRequest) {
       .sort(sort)
       .lean();
 
-    return NextResponse.json({ deals });
+    return NextResponse.json({ 
+      success: true, 
+      deals
+    });
   } catch (error) {
-    console.error('Deals fetch error:', error);
+    console.error('Error fetching deals:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch deals' },
+      { success: false, error: 'Failed to fetch deals' },
       { status: 500 }
     );
   }
-} 
+}

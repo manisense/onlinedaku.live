@@ -1,60 +1,71 @@
-import Image from 'next/image';
 import React from 'react';
+import Image from 'next/image';
 
 interface LoaderProps {
   size?: 'small' | 'medium' | 'large';
+  color?: string;
   text?: string;
-  fullScreen?: boolean;
+  overlay?: boolean;
 }
 
-const Loader: React.FC<LoaderProps> = ({ 
-  size = 'medium', 
-  text = 'Loading...', 
-  fullScreen = false 
+const Loader: React.FC<LoaderProps> = ({
+  size = 'medium',
+  color = 'indigo',
+  text,
+  overlay = false
 }) => {
   const sizeClasses = {
-    small: 'w-6 h-6',
-    medium: 'w-10 h-10',
-    large: 'w-16 h-16'
-  };
-  
-  const textSizeClasses = {
-    small: 'text-xs',
-    medium: 'text-sm',
-    large: 'text-base'
+    small: {
+      wrapper: 'h-8 w-8',
+      image: 16,
+      border: 'border-2'
+    },
+    medium: {
+      wrapper: 'h-16 w-16',
+      image: 32,
+      border: 'border-3'
+    },
+    large: {
+      wrapper: 'h-24 w-24',
+      image: 48,
+      border: 'border-4'
+    }
   };
 
-  const loaderContent = (
-    <div className="flex flex-col items-center justify-center">
+  const Container = overlay ? 'div' : 'span';
+
+  return (
+    <Container className={`
+      ${overlay ? 'fixed inset-0 bg-black/20 backdrop-blur-sm z-50' : 'inline-block'}
+      flex items-center justify-center
+    `}>
       <div className="relative">
-        {/* Animated circle spinner */}
-        <div className={`${sizeClasses[size]} border-4 border-gray-200 border-t-indigo-600 rounded-full animate-spin`}></div>
+        {/* Spinning Border */}
+        <div className={`
+          ${sizeClasses[size].wrapper}
+          ${sizeClasses[size].border}
+          rounded-full
+          border-t-indigo-600
+          border-r-indigo-600/40
+          border-b-indigo-600/20
+          border-l-indigo-600/60
+          animate-spin
+        `} />
         
-        {/* SVG logo in center */}
-        <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center">
-          <Image src="/logo.svg" alt="Logo" width={size === 'large' ? 40 : 24} height={size === 'large' ? 40 : 24} />
+        {/* Centered Logo */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Image
+            src="/logo.svg"
+            alt="Logo"
+            width={sizeClasses[size].image}
+            height={sizeClasses[size].image}
+            className="object-contain"
+          />
         </div>
       </div>
-      
-      {text && (
-        <p className={`mt-3 ${textSizeClasses[size]} text-gray-600 font-medium`}>
-          {text}
-        </p>
-      )}
-    </div>
+      {text && <div className="mt-2 text-gray-600">{text}</div>}
+    </Container>
   );
-
-  if (fullScreen) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-6 rounded-lg shadow-lg">
-          {loaderContent}
-        </div>
-      </div>
-    );
-  }
-
-  return loaderContent;
 };
 
 export default Loader;
