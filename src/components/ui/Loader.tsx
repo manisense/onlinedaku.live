@@ -10,7 +10,6 @@ interface LoaderProps {
 
 const Loader: React.FC<LoaderProps> = ({
   size = 'medium',
-  color = 'indigo',
   text,
   overlay = false
 }) => {

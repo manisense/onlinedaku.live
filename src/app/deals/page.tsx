@@ -5,15 +5,20 @@ import MainLayout from '@/components/Layout/MainLayout';
 import { useLoading } from '@/context/LoadingContext';
 import Loader from '@/components/ui/Loader';
 import SearchBar from '@/components/Search/SearchBar';
+import ProductCard from '@/components/ProductCard';
 
 interface Deal {
   _id: string;
   title: string;
   description: string;
+  price: number;
+  originalPrice: number;
   store: string;
   category: string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
+  image: string;
+  link: string;
   startDate: string;
   endDate: string;
   couponCode?: string;
@@ -83,24 +88,23 @@ export default function DealsPage() {
               <p className="text-gray-500">No deals found</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {deals.map((deal) => (
-                <div key={deal._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900">{deal.title}</h3>
-                    <p className="text-sm text-gray-500">{deal.store}</p>
-                    <p className="text-gray-600 text-sm mt-2 mb-4">{deal.description}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        {deal.discountType === 'percentage' ? `${deal.discountValue}%` : `$${deal.discountValue}`} OFF
-                      </span>
-                      <p className="text-xs text-gray-500">
-                        Expires: {new Date(deal.endDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
+            <div className="container mx-auto px-4 py-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {deals.map((deal) => (
+                  <ProductCard 
+                    key={deal._id} 
+                    product={{
+                      title: deal.title,
+                      description: deal.description,
+                      price: deal.price,
+                      originalPrice: deal.originalPrice,
+                      discountValue: deal.discountValue,
+                      image: deal.image,
+                      link: deal.link
+                    }} 
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>

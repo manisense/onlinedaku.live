@@ -25,8 +25,8 @@ interface Deal {
 }
 
 export default function DealDetailPage() {
-  const params = useParams();
-  const dealId = params.id as string;
+  const params = useParams() as { id: string };
+  const dealId = params.id;
   
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);

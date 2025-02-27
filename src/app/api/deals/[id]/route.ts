@@ -1,18 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/utils/dbConnect';
 import Deal from '@/models/Deal';
 
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     await dbConnect();
     
-    const { id } = params;
+    const { id } = await params;
     
     if (!id) {
       return NextResponse.json(

@@ -71,6 +71,7 @@ const DealSchema = new Schema<IDeal>(
             new URL(v);
             return true;
           } catch (e) {
+            console.log(e);
             return false;
           }
         },
@@ -87,6 +88,7 @@ const DealSchema = new Schema<IDeal>(
             new URL(v);
             return true;
           } catch (e) {
+            console.log(e);
             return false;
           }
         },

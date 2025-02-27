@@ -40,7 +40,7 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
   return (
     <LoadingContext.Provider value={value}>
       {children}
-      {isLoading && <Loader fullScreen text={loadingMessage} />}
+      {isLoading && <Loader text={loadingMessage} />}
     </LoadingContext.Provider>
   );
 }
