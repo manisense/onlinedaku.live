@@ -14,15 +14,6 @@ interface RelatedPost {
   coverImage?: string;
 }
 
-// type Params = {
-//   slug: string;
-// };
-
-// type PageProps = {
-//   params: Params;
-//   searchParams?: { [key: string]: string | string[] | undefined };
-// }
-
 export async function generateMetadata({ params }: { params: Promise<{slug: string}>}): Promise<Metadata> {
   const { slug } = await params;
   const { blog } = await getBlogData(slug);

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import dayjs from 'dayjs';
 import BlogPagination from './BlogPagination';
 import { IBlog } from '@/types/blog';
+import Loader from '../ui/Loader';
 
 interface BlogListProps {
   initialBlogs: IBlog[];
@@ -36,10 +37,10 @@ export default function BlogList({ initialBlogs, totalPages }: BlogListProps) {
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
-        <p className="mt-2 text-gray-500">Loading blogs...</p>
+      <div className="flex justify-center items-center h-screen">
+        <Loader size='medium' text='Loading blogs..' />
       </div>
+      
     );
   }
 

@@ -7,6 +7,7 @@ import BlogEditor from '@/components/admin/BlogEditor';
 import { FaSave, FaArrowLeft, FaTags, FaEye } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
+import Loader from '@/components/ui/Loader';
 
 
 interface BlogForm {
@@ -190,20 +191,15 @@ export default function EditBlogPost({params}:{ params: Promise<{ id: string }>}
 
   if (loading) {
     return (
-      <AdminLayout>
-        <div className="p-6 flex justify-center items-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading blog post...</p>
-          </div>
-        </div>
-      </AdminLayout>
+      <div className="flex justify-center items-center h-screen">
+      <Loader size='medium' text='Loading blog post...' />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <AdminLayout>
+
         <div className="p-6 flex justify-center items-center min-h-screen">
           <div className="text-center">
             <div className="text-red-600 text-xl mb-4">Error</div>
@@ -213,7 +209,7 @@ export default function EditBlogPost({params}:{ params: Promise<{ id: string }>}
             </Link>
           </div>
         </div>
-      </AdminLayout>
+
     );
   }
 

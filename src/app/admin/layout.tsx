@@ -10,7 +10,8 @@ import {
   FaCog, 
   FaSignOutAlt,
   FaBars,
-  FaTimes
+  FaTimes,
+  FaBlog
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { confirmLogout } from '@/utils/confirmDialog';
@@ -29,7 +30,7 @@ export default function AdminLayout({
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: FaChartBar },
     { name: 'Deals', href: '/admin/deals', icon: FaTags },
-    { name: 'Blogs', href: '/admin/blogs', icon: FaTags },
+    { name: 'Blogs', href: '/admin/blogs', icon: FaBlog },
     { name: 'Users', href: '/admin/users', icon: FaUsers },
     { name: 'Settings', href: '/admin/settings', icon: FaCog },
   ];

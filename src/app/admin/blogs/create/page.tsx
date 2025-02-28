@@ -115,14 +115,14 @@ export default function CreateBlogPost() {
   };
 
   return (
-    <AdminLayout>
+
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <Link href="/admin/blogs" className="text-gray-500 hover:text-gray-700 mr-4">
               <FaArrowLeft />
             </Link>
-            <h1 className="text-2xl font-bold">Create New Blog Post</h1>
+            <h1 className="text-2xl text-indigo-700 font-bold">Create New Blog Post</h1>
           </div>
           <button
             type="button"
@@ -316,6 +316,6 @@ export default function CreateBlogPost() {
           </div>
         </form>
       </div>
-    </AdminLayout>
+
   );
 }

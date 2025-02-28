@@ -6,6 +6,7 @@ import { FaEdit, FaTrash, FaPlus, FaEye } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import dayjs from 'dayjs';
+import Loader from '@/components/ui/Loader';
 
 interface Blog {
   _id: string;
@@ -98,10 +99,9 @@ export default function AdminBlogs() {
         </div>
 
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="mt-2 text-gray-500">Loading blogs...</p>
-          </div>
+          <div className="flex justify-center items-center h-screen">
+           <Loader size='medium' text='Loading blogs...' />
+           </div>
         ) : blogs.length === 0 ? (
           <div className="text-center py-8 border rounded-lg">
             <p className="text-gray-500">No blog posts found.</p>
