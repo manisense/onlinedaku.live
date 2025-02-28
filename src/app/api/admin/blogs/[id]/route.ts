@@ -7,6 +7,8 @@ import { verifyToken } from '@/utils/auth';
 export async function GET(request: NextRequest, {params}:{ params: Promise<{id: string}>}) {
   try {
     // Verify admin token
+    console.log('Incoming headers:', request.headers);
+  console.log('Request URL:', request.url);
     const admin = await verifyToken(request);
     if (!admin) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });

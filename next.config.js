@@ -59,6 +59,7 @@ const nextConfig = {
   },
   // Enable strict mode for better React development
   reactStrictMode: true,
+   output: 'standalone',
 };
 
 module.exports = nextConfig;
