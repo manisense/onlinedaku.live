@@ -1,6 +1,15 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
+const ADMIN_PERMISSIONS = [
+  'manage_deals',
+  'manage_coupons',  // Added missing permission
+  'manage_users',
+  'manage_admins',
+  'view_analytics',
+  'manage_settings'
+] as const;
+
 const AdminSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -33,14 +42,8 @@ const AdminSchema = new mongoose.Schema({
   },
   permissions: {
     type: [String],
-    default: ['manage_deals', 'view_analytics'], // Default permissions for regular admin
-    enum: [
-      'manage_deals',
-      'manage_users',
-      'manage_admins',
-      'view_analytics',
-      'manage_settings'
-    ]
+    default: ['manage_deals', 'manage_coupons', 'view_analytics'], // Updated default permissions
+    enum: ADMIN_PERMISSIONS
   }
 }, {
   timestamps: true
@@ -64,6 +67,7 @@ AdminSchema.methods.getPermissions = function(): string[] {
   if (this.role === 'super_admin') {
     return [
       'manage_deals',
+      'manage_coupons',  // Added missing permission
       'manage_users',
       'manage_admins',
       'view_analytics',
