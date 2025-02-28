@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Loader from '@/components/ui/Loader';
 
 interface SiteSettings {
   siteName: string;
@@ -56,6 +57,7 @@ export default function SettingsPage() {
   }, []);
 
   const fetchSettings = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch('/api/admin/settings', {
@@ -71,6 +73,8 @@ export default function SettingsPage() {
     } catch (error) {
       console.error('Error fetching settings:', error);
       toast.error('Failed to load settings');
+    } finally{
+      setLoading(false);
     }
   };
 
@@ -101,6 +105,14 @@ export default function SettingsPage() {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader size="large" text="Loading Settings..." />
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">

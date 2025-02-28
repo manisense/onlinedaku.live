@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import toast from 'react-hot-toast';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -48,6 +49,7 @@ export default function AdminLogin() {
       }
     } finally {
       setLoading(false);
+      toast.success('Logged in successfully');
     }
   };
 

@@ -36,7 +36,7 @@ const Loader: React.FC<LoaderProps> = ({
   return (
     <Container className={`
       ${overlay ? 'fixed inset-0 bg-black/20 backdrop-blur-sm z-50' : 'inline-block'}
-      flex items-center justify-center
+      flex items-center justify-center duration-300 ease-in-out flex-col
     `}>
       <div className="relative">
         {/* Spinning Border */}
@@ -62,7 +62,10 @@ const Loader: React.FC<LoaderProps> = ({
           />
         </div>
       </div>
-      {text && <div className="mt-2 text-gray-600">{text}</div>}
+      <div>
+      {text && <div className="mt-2 text-indigo-600">{text}</div>}
+      </div>
+      
     </Container>
   );
 };

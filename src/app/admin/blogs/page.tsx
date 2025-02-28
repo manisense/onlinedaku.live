@@ -99,9 +99,9 @@ export default function AdminBlogs() {
         </div>
 
         {loading ? (
-          <div className="flex justify-center items-center h-screen">
-           <Loader size='medium' text='Loading blogs...' />
-           </div>
+          <div className="flex items-center justify-center min-h-screen">
+          <Loader size="large" text="Loading Blogs..." />
+        </div>
         ) : blogs.length === 0 ? (
           <div className="text-center py-8 border rounded-lg">
             <p className="text-gray-500">No blog posts found.</p>

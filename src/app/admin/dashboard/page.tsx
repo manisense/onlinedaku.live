@@ -7,6 +7,7 @@ import StatsCard from './components/StatsCard';
 import RecentDeals from './components/RecentDeals';
 import ActivityChart from './components/ActivityChart';
 import AlertsSection from './components/AlertsSection';
+import Loader from '@/components/ui/Loader';
 
 interface DashboardStats {
   totalDeals: number;
@@ -44,6 +45,7 @@ export default function Dashboard() {
   }, [router]);
 
   const fetchDashboardStats = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem('adminToken');
       const response = await fetch('/api/admin/dashboard/stats', {
@@ -61,7 +63,11 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader size="large" text="Loading Dashboard..." />
+      </div>
+    );
   }
 
   return (
