@@ -13,13 +13,11 @@ const AdminSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email'],
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [8, 'Password must be at least 8 characters long'],
-    select: false, // Don't return password in queries by default
+    select: false,
   },
   role: {
     type: String,
@@ -33,25 +31,19 @@ const AdminSchema = new mongoose.Schema({
   lastLogin: {
     type: Date,
   },
-  permissions: [{
-    type: String,
+  permissions: {
+    type: [String],
+    default: ['manage_deals', 'view_analytics'], // Default permissions for regular admin
     enum: [
       'manage_deals',
-      'manage_coupons',
       'manage_users',
       'manage_admins',
       'view_analytics',
       'manage_settings'
     ]
-  }],
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
   }
+}, {
+  timestamps: true
 });
 
 // Hash password before saving
@@ -65,29 +57,20 @@ AdminSchema.pre('save', async function(next) {
 
 // Method to compare passwords
 AdminSchema.methods.comparePassword = async function(enteredPassword: string): Promise<boolean> {
-  console.log('comparePassword called');
-  console.log('Stored password exists:', !!this.password);
-  console.log('Entered password length:', enteredPassword?.length);
-  console.log('Stored password length:', this.password?.length);
-  
-  const result = await bcrypt.compare(enteredPassword, this.password);
-  console.log('Password comparison result:', result);
-  return result;
+  return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method to get admin's full permissions
 AdminSchema.methods.getPermissions = function(): string[] {
   if (this.role === 'super_admin') {
     return [
       'manage_deals',
-      'manage_coupons',
       'manage_users',
       'manage_admins',
       'view_analytics',
       'manage_settings'
     ];
   }
-  return this.permissions;
+  return this.permissions || [];
 };
 
-export default mongoose.models.Admin || mongoose.model('Admin', AdminSchema); 
+export default mongoose.models.Admin || mongoose.model('Admin', AdminSchema);

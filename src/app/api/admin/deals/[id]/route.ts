@@ -27,7 +27,7 @@ export async function PUT(
       id,
       {
         ...body,
-        updatedBy: admin.id,
+        updatedBy: admin._id,
       },
       { new: true, runValidators: true }
     );

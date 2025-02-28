@@ -75,8 +75,8 @@ export async function POST(req: NextRequest) {
     // Create the new deal
     const deal = await Deal.create({
       ...body,
-      createdBy: admin.id,
-      updatedBy: admin.id
+      createdBy: admin._id,
+      updatedBy: admin._id
     });
 
     // Return the newly created deal

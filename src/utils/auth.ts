@@ -1,35 +1,31 @@
+import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
-import { verify } from 'jsonwebtoken';
 import Admin from '@/models/Admin';
 import dbConnect from './dbConnect';
 
 export async function verifyToken(req: NextRequest) {
-  const token = req.headers.get('authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    return null;
-  }
-
   try {
-    const decoded = verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      role: string;
-    };
+    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    if (!token) return null;
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
     await dbConnect();
     const admin = await Admin.findById(decoded.id);
+    
+    if (!admin) return null;
 
-    if (!admin || !admin.isActive) {
-      return null;
-    }
-
+    // Return admin document directly
     return {
-      id: admin._id,
+      _id: admin._id,
+      name: admin.name,
+      email: admin.email,
       role: admin.role,
-      permissions: admin.getPermissions(),
+      permissions: admin.permissions || ['manage_deals', 'view_analytics'],
+      isActive: admin.isActive
     };
+
   } catch (error) {
     console.error('Error verifying token:', error);
     return null;
   }
-} 
+}

@@ -1,57 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verify } from 'jsonwebtoken';
-import Admin from '@/models/Admin';
+import { verifyToken } from '@/utils/auth';
 import dbConnect from '@/utils/dbConnect';
 
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json(
-        { error: 'No token provided' },
-        { status: 401 }
-      );
-    }
-
-    const decoded = verify(token, process.env.JWT_SECRET!) as {
-      id: string;
-      role: string;
-    };
-
     await dbConnect();
-    const admin = await Admin.findById(decoded.id);
-
+    const admin = await verifyToken(req);
+    
     if (!admin) {
-      return NextResponse.json(
-        { error: 'Admin not found' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    if (!admin.isActive) {
-      return NextResponse.json(
-        { error: 'Account is deactivated' },
-        { status: 403 }
-      );
-    }
+    // Instead of using getPermissions method, determine permissions directly
+    const permissions = admin.role === 'super_admin' 
+      ? [
+          'manage_deals',
+          'manage_users',
+          'manage_admins',
+          'view_analytics',
+          'manage_settings'
+        ]
+      : (admin.permissions || ['manage_deals', 'view_analytics']);
 
     return NextResponse.json({
+      success: true,
       admin: {
         id: admin._id,
         name: admin.name,
         email: admin.email,
         role: admin.role,
-        permissions: admin.getPermissions()
+        permissions
       }
     });
   } catch (error) {
     console.error('Token verification error:', error);
     return NextResponse.json(
-      { error: 'Invalid token' },
+      { error: 'Invalid or expired token' },
       { status: 401 }
     );
   }
-} 
+}

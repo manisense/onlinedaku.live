@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
           { _id: { $in: dealIds } },
           { 
             isActive: true,
-            updatedBy: admin.id 
+            updatedBy: admin._id 
           }
         );
         break;
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
           { _id: { $in: dealIds } },
           { 
             isActive: false,
-            updatedBy: admin.id 
+            updatedBy: admin._id 
           }
         );
         break;

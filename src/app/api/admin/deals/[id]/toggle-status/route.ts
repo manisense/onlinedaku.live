@@ -27,7 +27,7 @@ export async function PATCH(
       id,
       {
         isActive,
-        updatedBy: admin.id,
+        updatedBy: admin._id,
       },
       { new: true }
     );
