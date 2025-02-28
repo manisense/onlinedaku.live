@@ -3,6 +3,7 @@ import connectDB from '@/utils/database';
 import Admin from '@/models/Admin';
 import AdminActivity from '@/models/AdminActivity';
 import jwt from 'jsonwebtoken';
+import { setAuthCookie } from '@/utils/auth';
 
 // Add this line to disable edge runtime
 export const runtime = 'nodejs';
@@ -74,10 +75,12 @@ export async function POST(req: NextRequest) {
       console.error('Activity logging error:', activityError);
     }
 
+    // Set the authentication cookie
+    await setAuthCookie(token);
+
     // Return success response with token
     return NextResponse.json({
       success: true,
-      token,
       admin: {
         id: admin._id,
         name: admin.name,
