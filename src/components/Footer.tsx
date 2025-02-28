@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
     { name: 'Coupons', href: '/coupons' },
     { name: 'Freebies', href: '/freebies' },
     { name: 'Stores', href: '/stores' },
-    { name: 'Forum', href: '/forum' }
+    { name: 'Blog', href: '/blog' }
   ];
 
   const secondaryNavLinks = [

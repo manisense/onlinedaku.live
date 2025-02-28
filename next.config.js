@@ -49,9 +49,16 @@ const nextConfig = {
     ],
     // More permissive format to ensure any external image can be loaded during development
     unoptimized: process.env.NODE_ENV === 'development',
+    domains: [
+      'via.placeholder.com',
+      'images.unsplash.com',
+      'i.imgur.com',
+      'res.cloudinary.com',
+      'www.example.com' // Add any other domains you might use for images
+    ],
   },
   // Enable strict mode for better React development
   reactStrictMode: true,
 };
 
-export default nextConfig;
+module.exports = nextConfig;

@@ -5,7 +5,8 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { 
   FaTachometerAlt, FaTag, FaUsers, FaCog, FaChartBar, 
-  FaBars, FaTimes, FaSignOutAlt
+  FaBars, FaTimes, FaSignOutAlt,
+  FaBlog
 } from 'react-icons/fa';
 
 interface SidebarProps {
@@ -27,10 +28,15 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       icon: <FaTachometerAlt className="mr-3 h-4 w-4" />,
     },
     {
-      name: 'Deals & Coupons',
+      name: 'Deals',
       href: '/admin/deals',
       icon: <FaTag className="mr-3 h-4 w-4" />,
     },
+    {
+        name: 'Blog',
+        href: '/admin/blog',
+        icon: <FaBlog className="mr-3 h-4 w-4" />,
+      },
     {
       name: 'Users',
       href: '/admin/users',

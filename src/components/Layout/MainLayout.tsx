@@ -13,7 +13,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <div className="sticky top-0 z-50 w-full">
         <MainNav />
       </div>
-      <main className="flex-grow w-full mx-auto">
+      <main className="flex-grow bg-white w-full mx-auto">
         {children}
       </main>
       <Footer />

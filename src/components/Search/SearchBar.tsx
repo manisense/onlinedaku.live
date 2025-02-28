@@ -15,6 +15,8 @@ const SearchBar = () => {
   };
 
   return (
+    <div className="py-4 bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <form onSubmit={handleSearch} className="w-full max-w-3xl mx-auto">
       <div className="relative">
         <input
@@ -48,6 +50,8 @@ const SearchBar = () => {
         </button>
       </div>
     </form>
+    </div>
+    </div>
   );
 };
 

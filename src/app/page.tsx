@@ -12,11 +12,8 @@ export default function Home() {
       <div className="sticky top-0 z-50 w-full">
         <MainNav />
       </div>
-      <div className="py-8 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <SearchBar />
-        </div>
-      </div>
+
       <Categories />
       <HeroSection />
       <FeaturedDeals />

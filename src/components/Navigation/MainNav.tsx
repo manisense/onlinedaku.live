@@ -12,6 +12,7 @@ const MainNav = () => {
     { name: 'Coupons', href: '/coupons' },
     { name: 'Freebies', href: '/freebies' },
     { name: 'Stores', href: '/stores' },
+    { name: 'Blogs', href: '/blog' },
   ];
 
   return (

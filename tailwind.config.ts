@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss";
 
-export default {
+const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,7 +12,30 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: "100ch",
+            color: "inherit",
+            a: {
+              color: "var(--tw-prose-links)",
+              "&:hover": {
+                color: "var(--tw-prose-links-hover)",
+              },
+            },
+          },
+        },
+      },
+    },
+    container: {
+      center: true,
+      padding: "1rem",
     },
   },
-  plugins: [],
-} satisfies Config;
+  plugins: [
+    require("@tailwindcss/typography"),
+    require("@tailwindcss/forms"),
+  ],
+};
+
+export default config;

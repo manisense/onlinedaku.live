@@ -28,7 +28,8 @@ export default function AdminLayout({
 
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: FaChartBar },
-    { name: 'Deals & Coupons', href: '/admin/deals', icon: FaTags },
+    { name: 'Deals', href: '/admin/deals', icon: FaTags },
+    { name: 'Blogs', href: '/admin/blogs', icon: FaTags },
     { name: 'Users', href: '/admin/users', icon: FaUsers },
     { name: 'Settings', href: '/admin/settings', icon: FaCog },
   ];

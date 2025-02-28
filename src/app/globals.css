@@ -3,14 +3,52 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #545252;
+  --foreground: #f1f1f1;
+  --tw-prose-body: #374151;
+  --tw-prose-headings: #111827;
+  --tw-prose-links: #2563eb;
+  --tw-prose-links-hover: #1d4ed8;
+  --tw-prose-underline: #374151;
+  --tw-prose-underline-hover: #1f2937;
+  --tw-prose-bold: #111827;
+  --tw-prose-counters: #6b7280;
+  --tw-prose-bullets: #d1d5db;
+  --tw-prose-hr: #e5e7eb;
+  --tw-prose-quote-borders: #e5e7eb;
+  --tw-prose-captions: #6b7280;
+  --tw-prose-code: #111827;
+  --tw-prose-code-bg: #f3f4f6;
+  --tw-prose-pre-code: #e5e7eb;
+  --tw-prose-pre-bg: #1f2937;
+  --tw-prose-pre-border: #374151;
+  --tw-prose-th-borders: #d1d5db;
+  --tw-prose-td-borders: #e5e7eb;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --tw-prose-body: #d1d5db;
+    --tw-prose-headings: #fff;
+    --tw-prose-links: #60a5fa;
+    --tw-prose-links-hover: #93c5fd;
+    --tw-prose-underline: #d1d5db;
+    --tw-prose-underline-hover: #fff;
+    --tw-prose-bold: #fff;
+    --tw-prose-counters: #9ca3af;
+    --tw-prose-bullets: #4b5563;
+    --tw-prose-hr: #374151;
+    --tw-prose-quote-borders: #374151;
+    --tw-prose-captions: #9ca3af;
+    --tw-prose-code: #fff;
+    --tw-prose-code-bg: #1f2937;
+    --tw-prose-pre-code: #d1d5db;
+    --tw-prose-pre-bg: #111827;
+    --tw-prose-pre-border: #1f2937;
+    --tw-prose-th-borders: #4b5563;
+    --tw-prose-td-borders: #374151;
   }
 }
 
@@ -18,6 +56,34 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.prose {
+  max-width: none;
+}
+
+.prose img {
+  margin: 2rem auto;
+  border-radius: 0.5rem;
+}
+
+.prose pre {
+  background-color: var(--tw-prose-pre-bg);
+  border: 1px solid var(--tw-prose-pre-border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.prose code {
+  background-color: var(--tw-prose-code-bg);
+  border-radius: 0.25rem;
+  padding: 0.2em 0.4em;
+  font-size: 0.875em;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
 }
 
 @layer utilities {

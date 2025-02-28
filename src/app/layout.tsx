@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientProviders from '@/components/ClientProviders';
 
-const geist = Geist({
+const inter = Inter({
   subsets: ["latin"],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Online Daku",
-  description: "Find the best deals and coupons",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  title: {
+    default: 'Online Daku - Best Deals & Discounts',
+    template: '%s | Online Daku'
+  },
+  description: 'Find the best deals, discounts, and shopping offers online.',
+  keywords: ['deals', 'discounts', 'shopping', 'blog', 'online shopping'],
 };
 
 export default function RootLayout({
@@ -19,7 +25,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={geist.className}>
+      <body className={inter.className}>
         <ClientProviders>
           {children}
         </ClientProviders>

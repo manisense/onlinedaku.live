@@ -197,7 +197,7 @@ function parseProductData(html: string, store: ProductData['store'], url: string
     // Look for price elements with currency symbols
     $('[class*="price"]:not([class*="original"]):not([class*="old"]):not([class*="strike"])').each((i, el) => {
       const text = $(el).text().trim();
-      if (text.match(/[\$\£\€\₹]\s*\d+/)) {
+      if (text.match(/[$£€₹]\s*\d+/)) {
         price = extractPrice(text);
         return false; // break
       }
@@ -255,7 +255,7 @@ function extractPrice(text: string): number {
   if (!text) return 0;
   
   // Handle different currency symbols with more specificity for ₹
-  const regex = /[₹\$\£\€]?\s*([\d,]+(?:\.\d+)?)/;
+  const regex = /[₹$£€]?\s*([\d,]+(?:\.\d+)?)/;
   const match = text.match(regex);
   
   if (match && match[1]) {

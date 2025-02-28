@@ -1,54 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Image, { ImageProps } from 'next/image';
 
-interface ExternalImageProps {
+interface ExternalImageProps extends Omit<ImageProps, 'src'> {
   src: string;
-  alt: string;
-  width: number;
-  height: number;
-  className?: string;
+  fallbackSrc?: string;
 }
 
-export default function ExternalImage({ src, alt, width, height, className = '' }: ExternalImageProps) {
+// This component handles external images with proper error handling
+export default function ExternalImage({
+  src,
+  alt,
+  fallbackSrc = 'https://via.placeholder.com/600x400?text=Image+Not+Available',
+  ...props
+}: ExternalImageProps) {
   const [imgSrc, setImgSrc] = useState(src);
-  const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    setImgSrc(src);
-    setHasError(false);
-  }, [src]);
-
-  if (!src || hasError) {
-    return (
-      <div 
-        className={`bg-gray-100 flex items-center justify-center ${className}`}
-        style={{ width, height }}
-      >
-        <svg
-          className="text-gray-400 w-1/2 h-1/2"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-      </div>
-    );
-  }
+  const [isError, setIsError] = useState(false);
 
   return (
-    <img
+    <Image
+      {...props}
       src={imgSrc}
       alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      onError={() => setHasError(true)}
-      loading="lazy"
+      onError={() => {
+        if (!isError) {
+          setImgSrc(fallbackSrc);
+          setIsError(true);
+        }
+      }}
+      unoptimized // Needed for external images
     />
   );
 }
