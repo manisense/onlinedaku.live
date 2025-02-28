@@ -1,36 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// Add this line to use Node.js runtime instead of Edge
 export const runtime = 'nodejs';
 
-export function middleware(req: NextRequest) {
+export function middleware(request: NextRequest) {
   // Add security headers
   const response = NextResponse.next();
-  
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-XSS-Protection', '1; mode=block');
   
-  // Allow images from other domains
-  response.headers.set('Access-Control-Allow-Origin', '*');
-  
-  // Get the pathname
-  const path = req.nextUrl.pathname;
+  const path = request.nextUrl.pathname;
 
-  // Check if it's an admin path (excluding login)
-  if (path.startsWith('/admin') && path !== '/admin/login') {
-    const token = req.cookies.get('adminToken');
+  // Handle admin routes
+  if (path.startsWith('/admin')) {
+    // Allow access to login page
+    if (path === '/admin/login') {
+      return response;
+    }
 
-    // If no token found, redirect to login
+    // Check for admin token
+    const token = request.cookies.get('adminToken');
+    
+    // If no token and not already on login page, redirect to login
     if (!token) {
-      return NextResponse.redirect(new URL('/admin/login', req.url));
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+
+    // If on root admin path, redirect to dashboard
+    if (path === '/admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url));
     }
   }
 
   return response;
 }
 
-// Update the matcher to be more specific
 export const config = {
   matcher: [
     '/admin/:path*',

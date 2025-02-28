@@ -1,14 +1,17 @@
-import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 import Admin from '@/models/Admin';
 import dbConnect from './dbConnect';
 
-export async function verifyToken(req: NextRequest) {
+const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
+
+export async function verifyToken(request: NextRequest) {
   try {
-    const token = req.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.cookies.get('adminToken')?.value;
     if (!token) return null;
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
     await dbConnect();
     const admin = await Admin.findById(decoded.id);
     
@@ -25,7 +28,23 @@ export async function verifyToken(req: NextRequest) {
     };
 
   } catch (error) {
-    console.error('Error verifying token:', error);
+    console.error('Token verification failed:', error);
     return null;
   }
+}
+
+export async function setAuthCookie(token: string) {
+  const cookieStore = await cookies();
+  cookieStore.set('adminToken', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    path: '/',
+  });
+}
+
+export async function removeAuthCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete('adminToken');
 }
