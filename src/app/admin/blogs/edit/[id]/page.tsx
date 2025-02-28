@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 // import { useRouter } from 'next/navigation';
-import AdminLayout from '@/admin/components/AdminLayout';
 import BlogEditor from '@/components/admin/BlogEditor';
 import { FaSave, FaArrowLeft, FaTags, FaEye } from 'react-icons/fa';
 import toast from 'react-hot-toast';
