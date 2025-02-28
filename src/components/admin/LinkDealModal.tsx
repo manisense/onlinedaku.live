@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { FaSpinner, FaTimes, FaLink, FaShoppingCart } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import Image from 'next/image';
 
 interface LinkDealModalProps {
   isOpen: boolean;
@@ -79,7 +78,29 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch product data');
+        // Handle error but allow manual entry if partialData is available
+        if (data.partialData) {
+          setProductData(data.partialData);
+          setDealData({
+            ...dealData,
+            title: data.partialData.title || '',
+            description: data.partialData.description || '',
+            price: data.partialData.price || 0,
+            originalPrice: data.partialData.originalPrice || 0,
+            store: data.partialData.store || '',
+            image: data.partialData.image || '',
+            link: url.trim(),
+          });
+          toast('Some product details could not be extracted. Please review and complete.', {
+            icon: '⚠️',
+            style: { background: '#FFF3CD', color: '#856404' }
+          });
+          return;
+        }
+        
+        setError(data.error || 'Failed to fetch product data');
+        toast.error('Could not extract product information. You can add details manually.');
+        return;
       }
 
       setProductData(data.productData);
@@ -98,9 +119,12 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
         link: data.productData.link,
       });
 
+      toast.success('Product details fetched successfully');
+
     } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch product data');
+      console.error('Error fetching product:', err);
+      setError('Network error while fetching product data');
+      toast.error('Failed to connect to server. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -115,7 +139,23 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
     }
 
     try {
-      await onSubmit(dealData as DealData);
+      // Calculate discount percentage based on prices
+      const discountPercentage = 
+        dealData.originalPrice && dealData.price && dealData.originalPrice > dealData.price
+          ? Math.round(((dealData.originalPrice - dealData.price) / dealData.originalPrice) * 100)
+          : 0;
+
+      // Prepare the deal data for submission
+      const completeData: DealData = {
+        ...dealData as DealData,
+        discountType: 'percentage',
+        discountValue: discountPercentage,
+        startDate: dealData.startDate || new Date(),
+        endDate: dealData.endDate || new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        isActive: true
+      };
+
+      await onSubmit(completeData);
       toast.success('Deal successfully created from product link');
       resetForm();
       onClose();
@@ -196,12 +236,10 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
                 <div className="col-span-1 md:col-span-2 flex items-start">
                   {productData.image && (
                     <div className="mr-4 flex-shrink-0">
-                      <Image 
+                      <img 
                         src={productData.image}
                         alt={productData.title}
-                        width={100}
-                        height={100}
-                        className="object-contain border rounded"
+                        className="w-[100px] h-[100px] object-contain border rounded"
                         onError={(e) => {
                           // Fallback for image loading errors
                           e.currentTarget.src = '/product-placeholder.png';
@@ -263,79 +301,48 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Discount Type
-                  </label>
-                  <select
-                    value={dealData.discountType || 'percentage'}
-                    onChange={(e) => setDealData({ 
-                      ...dealData, 
-                      discountType: e.target.value as 'percentage' | 'fixed'
-                    })}
-                    className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="percentage">Percentage</option>
-                    <option value="fixed">Fixed Amount</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Discount Value
+                    Current Price (₹)
                   </label>
                   <input
                     type="number"
-                    value={dealData.discountValue || 0}
+                    value={dealData.price || 0}
                     onChange={(e) => setDealData({ 
                       ...dealData, 
-                      discountValue: parseFloat(e.target.value) 
+                      price: parseFloat(e.target.value),
+                      // Auto-calculate discountPercentage when price changes
+                      discountValue: dealData.originalPrice && parseFloat(e.target.value) < dealData.originalPrice
+                        ? Math.round(((dealData.originalPrice - parseFloat(e.target.value)) / dealData.originalPrice) * 100)
+                        : dealData.discountValue
                     })}
                     className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
                     min="0"
+                    step="0.01"
+                    required
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date
+                    MRP / Original Price (₹)
                   </label>
                   <input
-                    type="date"
-                    value={dealData.startDate ? new Date(dealData.startDate).toISOString().split('T')[0] : ''}
+                    type="number"
+                    value={dealData.originalPrice || 0}
                     onChange={(e) => setDealData({ 
                       ...dealData, 
-                      startDate: e.target.value ? new Date(e.target.value) : undefined 
+                      originalPrice: parseFloat(e.target.value),
+                      // Auto-calculate discountPercentage when original price changes
+                      discountValue: dealData.price && parseFloat(e.target.value) > dealData.price
+                        ? Math.round(((parseFloat(e.target.value) - dealData.price) / parseFloat(e.target.value)) * 100)
+                        : dealData.discountValue
                     })}
                     className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                    min="0"
+                    step="0.01"
+                    required
                   />
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={dealData.endDate ? new Date(dealData.endDate).toISOString().split('T')[0] : ''}
-                    onChange={(e) => setDealData({ 
-                      ...dealData, 
-                      endDate: e.target.value ? new Date(e.target.value) : undefined 
-                    })}
-                    className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Coupon Code (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={dealData.couponCode || ''}
-                    onChange={(e) => setDealData({ ...dealData, couponCode: e.target.value })}
-                    className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-                
+
                 <div className="col-span-1 md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description <span className="text-xs text-gray-500">(max 500 chars)</span>
