@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FaSpinner, FaTimes, FaLink, FaShoppingCart } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import ExternalImage from '@/components/ui/ExternalImage';
 
 interface LinkDealModalProps {
   isOpen: boolean;
@@ -236,14 +237,12 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
                 <div className="col-span-1 md:col-span-2 flex items-start">
                   {productData.image && (
                     <div className="mr-4 flex-shrink-0">
-                      <img 
+                      <ExternalImage
                         src={productData.image}
                         alt={productData.title}
-                        className="w-[100px] h-[100px] object-contain border rounded"
-                        onError={(e) => {
-                          // Fallback for image loading errors
-                          e.currentTarget.src = '/product-placeholder.png';
-                        }}
+                        width={100}
+                        height={100}
+                        className="object-contain border rounded"
                       />
                     </div>
                   )}

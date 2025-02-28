@@ -13,7 +13,7 @@ import DealPreview from './components/DealPreview';
 import Loader from '@/components/ui/Loader';
 import { confirmDelete, confirmStatusChange } from '@/utils/confirmDialog';
 import LinkDealModal from '@/components/admin/LinkDealModal';
-import Image from 'next/image';
+import ExternalImage from '@/components/ui/ExternalImage';
 
 interface Deal {
   _id: string;
@@ -449,16 +449,12 @@ export default function DealsAndCoupons() {
                         <div className="flex items-center">
                           {deal.image && (
                             <div className="h-10 w-10 flex-shrink-0 mr-3">
-                              <Image
+                              <ExternalImage
                                 src={deal.image}
                                 alt={deal.title}
                                 width={40}
                                 height={40}
                                 className="h-10 w-10 object-cover rounded-md"
-                                onError={(e) => {
-                                  // Fallback image
-                                  e.currentTarget.src = '/product-placeholder.png';
-                                }}
                               />
                             </div>
                           )}
