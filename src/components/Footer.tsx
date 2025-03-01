@@ -57,11 +57,44 @@ const Footer: React.FC = () => {
             {/* Newsletter Signup */}
             <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2">Get Daily Deals</h3>
-              <form className="flex">
+              <form className="flex" onSubmit={async (e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const emailInput = form.querySelector('input[type="email"]') as HTMLInputElement;
+                const email = emailInput?.value;
+                
+                if (!email) {
+                  alert('Please enter your email address');
+                  return;
+                }
+                
+                try {
+                  const response = await fetch('/api/newsletter/subscribe', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email }),
+                  });
+                  
+                  const data = await response.json();
+                  
+                  if (response.ok) {
+                    alert(data.message);
+                    emailInput.value = '';
+                  } else {
+                    alert(data.message || 'Failed to subscribe. Please try again.');
+                  }
+                } catch (error) {
+                  console.error('Newsletter subscription error:', error);
+                  alert('An error occurred. Please try again later.');
+                }
+              }}>
                 <input
                   type="email"
                   placeholder="Enter your email"
                   className="flex-1 px-3 py-2 rounded-l-md text-gray-900 text-sm"
+                  required
                 />
                 <button
                   type="submit"

@@ -11,10 +11,12 @@ import CouponsSection from '@/components/Home/CouponsSection';
 import FreebiesSection from '@/components/Home/FreebiesSection';
 import StoresSection from '@/components/Home/StoresSection';
 import DealsSection from '@/components/Home/DealsSection';
+import TelegramBanner from '@/components/TelegramBanner';
 
 export default function Home() {
   return (
     <main>
+      <TelegramBanner />
       <div className="sticky top-0 z-50 w-full">
         <MainNav />
       </div>
