@@ -18,7 +18,6 @@ const Categories = () => {
   return (
     <section className="py-3 bg-white">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">Browse by Category</h2>
         <div className="grid text-gray-800 grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {categories.map((category) => (
             <Link

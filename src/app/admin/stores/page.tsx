@@ -7,36 +7,32 @@ import Link from 'next/link';
 import dayjs from 'dayjs';
 import Loader from '@/components/ui/Loader';
 
-interface Freebie {
+interface Store {
   _id: string;
-  title: string;
+  name: string;
   description: string;
-  store: string;
-  category: string;
-  image: string;
-  link: string;
-  termsAndConditions: string;
-  startDate: string;
-  endDate: string;
+  logo: string;
+  website: string;
   isActive: boolean;
+  createdAt: string;
 }
 
-export default function AdminFreebies() {
-  const [freebies, setFreebies] = useState<Freebie[] | null>(null);
+export default function AdminStores() {
+  const [stores, setStores] = useState<Store[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchFreebies();
+    fetchStores();
   }, [currentPage]);
 
-  const fetchFreebies = async () => {
+  const fetchStores = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('adminToken');
       
-      const response = await fetch(`/api/admin/freebies?page=${currentPage}&limit=10`, {
+      const response = await fetch(`/api/admin/stores?page=${currentPage}&limit=10`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -45,28 +41,28 @@ export default function AdminFreebies() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch freebies');
+        throw new Error(data.error || 'Failed to fetch stores');
       }
       
-      setFreebies(data.data);
-      setTotalPages(data.meta.totalPages);
+      setStores(data.stores);
+      setTotalPages(data.pagination.totalPages);
     } catch (error) {
-      console.error('Error fetching freebies:', error);
-      toast.error('Failed to load freebies');
+      console.error('Error fetching stores:', error);
+      toast.error('Failed to load stores');
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteFreebie = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this freebie?')) {
+  const deleteStore = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this store?')) {
       return;
     }
 
     try {
       const token = localStorage.getItem('adminToken');
       
-      const response = await fetch(`/api/admin/freebies/${id}`, {
+      const response = await fetch(`/api/admin/stores/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -75,41 +71,41 @@ export default function AdminFreebies() {
       
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || 'Failed to delete freebie');
+        throw new Error(data.error || 'Failed to delete store');
       }
       
-      toast.success('Freebie deleted successfully');
-      fetchFreebies();
+      toast.success('Store deleted successfully');
+      fetchStores();
     } catch (error) {
-      console.error('Error deleting freebie:', error);
-      toast.error('Failed to delete freebie');
+      console.error('Error deleting store:', error);
+      toast.error('Failed to delete store');
     }
   };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl text-indigo-600 font-bold">Manage Freebies</h1>
+        <h1 className="text-2xl text-indigo-600 font-bold">Manage Stores</h1>
         <Link 
-          href="/admin/freebies/create" 
+          href="/admin/stores/create" 
           className="bg-indigo-600 text-white px-4 py-2 rounded flex items-center"
         >
-          <FaPlus className="mr-2" /> New Freebie
+          <FaPlus className="mr-2" /> New Store
         </Link>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center min-h-screen">
-          <Loader size="large" text="Loading Freebies..." />
+          <Loader size="large" text="Loading Stores..." />
         </div>
-      ) : !freebies || freebies.length === 0 ? (
+      ) : !stores || stores.length === 0 ? (
         <div className="text-center py-8 border rounded-lg">
-          <p className="text-gray-500">No freebies found.</p>
+          <p className="text-gray-500">No stores found.</p>
           <Link 
-            href="/admin/freebies/create" 
+            href="/admin/stores/create" 
             className="mt-4 inline-block text-indigo-600 hover:text-indigo-800"
           >
-            Create your first freebie
+            Create your first store
           </Link>
         </div>
       ) : (
@@ -119,19 +115,16 @@ export default function AdminFreebies() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
+                    Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Store
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
+                    Website
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valid Till
+                    Created At
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -139,43 +132,42 @@ export default function AdminFreebies() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {freebies.map((freebie) => (
-                  <tr key={freebie._id} className="hover:bg-gray-50">
+                {stores.map((store) => (
+                  <tr key={store._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Link href={`/admin/freebies/edit/${freebie._id}`} className="font-medium text-indigo-600 hover:underline">
-                        {freebie.title}
+                      <Link href={`/admin/stores/edit/${store._id}`} className="font-medium text-indigo-600 hover:underline">
+                        {store.name}
                       </Link>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {freebie.store}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {freebie.category}
+                      <a href={store.website} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                        {store.website}
+                      </a>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs rounded-full ${freebie.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {freebie.isActive ? 'Active' : 'Inactive'}
+                      <span className={`px-2 py-1 text-xs rounded-full ${store.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {store.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {dayjs(freebie.endDate).format('MMM D, YYYY')}
+                      {dayjs(store.createdAt).format('MMM D, YYYY')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <Link 
-                        href={`/freebies/${freebie._id}`}
+                        href={`/stores/${store._id}`}
                         className="text-gray-500 hover:text-gray-700 mx-2"
                         target="_blank"
                       >
                         <FaEye />
                       </Link>
                       <Link 
-                        href={`/admin/freebies/edit/${freebie._id}`}
+                        href={`/admin/stores/edit/${store._id}`}
                         className="text-indigo-600 hover:text-indigo-900 mx-2"
                       >
                         <FaEdit />
                       </Link>
                       <button 
-                        onClick={() => deleteFreebie(freebie._id)}
+                        onClick={() => deleteStore(store._id)}
                         className="text-red-600 hover:text-red-900 mx-2"
                       >
                         <FaTrash />

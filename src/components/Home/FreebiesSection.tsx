@@ -53,16 +53,18 @@ const FreebiesSection: React.FC = () => {
     const fetchFreebies = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/freebies?limit=8');
+        const response = await fetch('/api/freebies?limit=8&isActive=true');
         if (!response.ok) {
           throw new Error('Failed to fetch freebies');
         }
         const data = await response.json();
-        setFreebies(data.freebies || []);
+        if (data.freebies && Array.isArray(data.freebies)) {
+          setFreebies(data.freebies);
+        } else {
+          throw new Error('Invalid freebies data format');
+        }
       } catch (err) {
         console.error('Error fetching freebies:', err);
-        //setError('Failed to load freebies');
-        // Fallback to sample data if API fails
         setFreebies([
           {
             _id: '1',

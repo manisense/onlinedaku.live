@@ -1,6 +1,7 @@
 import { verifyToken } from '@/utils/auth';
 import { NextRequest, NextResponse } from 'next/server';
-
+import dbConnect from '@/utils/dbConnect';
+import Freebie from '@/models/Freebie';
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,20 +47,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: Save freebie to database
-    // For now, return a mock success response
-    return NextResponse.json(
-      { 
-        message: 'Freebie created successfully',
-        data: {
-          _id: 'mock-id-' + Date.now(),
-          ...freebie,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
-      },
-      { status: 201 }
-    );
+    await dbConnect();
+
+    // Create new freebie
+    const newFreebie = await Freebie.create(freebie);
+
+    return NextResponse.json({ freebie: newFreebie }, { status: 201 });
 
   } catch (error) {
     console.error('Error creating freebie:', error);
@@ -88,30 +81,28 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    // TODO: Fetch freebies from database
-    // For now, return mock data
-    const mockFreebies = Array(limit).fill(null).map((_, index) => ({
-      _id: `mock-id-${index}`,
-      title: `Mock Freebie ${index + 1}`,
-      description: 'Mock description',
-      store: 'Mock Store',
-      category: 'Software',
-      image: '/product-placeholder.png',
-      link: 'https://example.com',
-      termsAndConditions: 'Mock terms',
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }));
+    await dbConnect();
+
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const totalFreebies = await Freebie.countDocuments();
+    const totalPages = Math.ceil(totalFreebies / limit);
+
+    // Fetch freebies with pagination
+    const freebies = await Freebie.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
     return NextResponse.json({
-      data: mockFreebies,
+      data: freebies,
       meta: {
         currentPage: page,
-        totalPages: 5,
-        totalItems: 50,
+        totalPages,
+        totalItems: totalFreebies,
         itemsPerPage: limit
       }
     });

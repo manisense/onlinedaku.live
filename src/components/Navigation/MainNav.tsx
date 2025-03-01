@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
+import { FaTelegram } from 'react-icons/fa';
 
 const MainNav = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +38,19 @@ const MainNav = () => {
                 </Link>
               ))}
             </div>
+          </div>
+          
+          {/* Telegram Button */}
+          <div className="hidden sm:flex sm:items-center">
+            <Link
+              href="https://t.me/onlinedaku"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600 transition-colors"
+            >
+              <FaTelegram className="mr-1.5" />
+              Join Telegram
+            </Link>
           </div>
           
           {/* Mobile menu button */}
@@ -95,6 +109,18 @@ const MainNav = () => {
               {item.name}
             </Link>
           ))}
+          
+          {/* Mobile Telegram Link */}
+          <Link
+            href="https://t.me/onlinedaku"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center pl-3 pr-4 py-2 text-base font-medium text-blue-500 hover:text-blue-700 hover:bg-gray-50"
+            onClick={() => setIsOpen(false)}
+          >
+            <FaTelegram className="mr-2" />
+            Join Telegram
+          </Link>
         </div>
       </div>
     </nav>

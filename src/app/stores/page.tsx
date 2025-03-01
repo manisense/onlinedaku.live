@@ -6,78 +6,47 @@ import MainLayout from '@/components/Layout/MainLayout';
 import SearchBar from '@/components/Search/SearchBar';
 import { useLoading } from '@/context/LoadingContext';
 
-const stores = [
-  {
-    id: 1,
-    name: 'Amazon',
-    logo: '/globe.svg',
-    category: 'Multi-Category',
-    description: 'World\'s largest online retailer with millions of products',
-    activeDeals: 245,
-    rating: 4.8,
-    featured: true,
-    website: 'https://amazon.com'
-  },
-  {
-    id: 2,
-    name: 'Best Buy',
-    logo: '/window.svg',
-    category: 'Electronics',
-    description: 'Leading electronics and technology products retailer',
-    activeDeals: 156,
-    rating: 4.6,
-    featured: true,
-    website: 'https://bestbuy.com'
-  },
-  {
-    id: 3,
-    name: 'Fashion Nova',
-    logo: '/file.svg',
-    category: 'Fashion',
-    description: 'Trendy fashion and accessories for men and women',
-    activeDeals: 89,
-    rating: 4.5,
-    featured: false,
-    website: 'https://fashionnova.com'
-  },
-  {
-    id: 4,
-    name: 'Home Depot',
-    logo: '/globe.svg',
-    category: 'Home & Garden',
-    description: 'Everything you need for home improvement and gardening',
-    activeDeals: 134,
-    rating: 4.7,
-    featured: true,
-    website: 'https://homedepot.com'
-  },
-  {
-    id: 5,
-    name: 'Booking.com',
-    logo: '/window.svg',
-    category: 'Travel',
-    description: 'Book hotels, flights, and vacation packages',
-    activeDeals: 67,
-    rating: 4.4,
-    featured: false,
-    website: 'https://booking.com'
-  },
-  {
-    id: 6,
-    name: 'GameStop',
-    logo: '/file.svg',
-    category: 'Gaming',
-    description: 'Video games, consoles, and gaming accessories',
-    activeDeals: 92,
-    rating: 4.3,
-    featured: false,
-    website: 'https://gamestop.com'
-  }
-];
+interface Store {
+  _id: string;
+  name: string;
+  description: string;
+  logo: string;
+  website: string;
+  isActive: boolean;
+  createdAt?: string;
+  category?: string;
+  rating?: number;
+  activeDeals?: number;
+  featured?: boolean;
+}
 
 const categories = ['All', 'Multi-Category', 'Electronics', 'Fashion', 'Home & Garden', 'Travel', 'Gaming'];
 
 export default function StoresPage() {
+  const [stores, setStores] = useState<Store[]>([]);
+
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const response = await fetch('/api/stores');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch stores');
+        }
+        
+        const data = await response.json();
+        // Update to handle the new API response structure
+        setStores(data.data || []);
+      } catch (err) {
+        console.error('Error fetching stores:', err);
+        // Fallback to empty array if API fails
+        setStores([]);
+      }
+    };
+
+    fetchStores();
+  }, []);
+
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
   const { showLoader, hideLoader } = useLoading();
@@ -104,9 +73,7 @@ export default function StoresPage() {
 
       <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Featured Stores</h1>
-
-        {/* Filters and Sorting */}
+       
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
           <div className="flex flex-wrap gap-2">
             {categories.map(category => (
@@ -135,14 +102,17 @@ export default function StoresPage() {
         {/* Stores Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStores.map(store => (
-            <div key={store.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <div key={store._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="relative h-40 bg-gray-100 p-6 flex items-center justify-center">
                 <Image
-                  src={store.logo}
+                  src={store.logo || '/product-placeholder.png'}
                   alt={store.name}
                   width={120}
                   height={120}
                   style={{ objectFit: 'contain' }}
+                  onError={(e) => {
+                    e.currentTarget.src = '/product-placeholder.png';
+                  }}
                 />
                 {store.featured && (
                   <div className="absolute top-4 right-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
@@ -166,7 +136,7 @@ export default function StoresPage() {
                 </div>
                 <div className="flex space-x-3">
                   <a
-                    href={`/stores/${store.id}`}
+                    href={`/stores/${store._id}`}
                     className="flex-1 text-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300"
                   >
                     View Deals
