@@ -16,13 +16,17 @@ interface Coupon {
 }
 
 const CouponCard: React.FC<Coupon> = ({ title, image, store, discount, link }) => {
+  // Ensure image and link have fallback values
+  const imageSrc = image || '/product-placeholder.png';
+  const linkHref = link || '#';
+
   return (
-    <Link href={link}>
+    <Link href={linkHref}>
       <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
         <div className="relative h-28">
           <Image
-            src={image}
-            alt={title}
+            src={imageSrc}
+            alt={title || 'Coupon Image'}
             fill
             sizes="(max-width: 768px) 100vw, 25vw"
             className="object-contain"
@@ -37,9 +41,9 @@ const CouponCard: React.FC<Coupon> = ({ title, image, store, discount, link }) =
           )}
         </div>
         <div className="p-2">
-          <h3 className="text-sm font-medium text-gray-900 truncate">{title}</h3>
+          <h3 className="text-sm font-medium text-gray-900 truncate">{title || 'Untitled Coupon'}</h3>
           <div className="flex items-center justify-between mt-1">
-            <span className="text-xs text-gray-600">{store}</span>
+            <span className="text-xs text-gray-600">{store || 'Unknown Store'}</span>
           </div>
         </div>
       </div>

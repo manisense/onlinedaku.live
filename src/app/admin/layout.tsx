@@ -11,7 +11,9 @@ import {
   FaSignOutAlt,
   FaBars,
   FaTimes,
-  FaBlog
+  FaBlog,
+  FaGift,
+  FaStore
 } from 'react-icons/fa';
 import { RiCoupon2Fill } from "react-icons/ri";
 import toast from 'react-hot-toast';
@@ -32,7 +34,9 @@ export default function AdminLayout({
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: FaChartBar },
     { name: 'Deals', href: '/admin/deals', icon: FaTags },
-    { name: 'Coupons', href: '/admin/coupons', icon:  RiCoupon2Fill},
+    { name: 'Coupons', href: '/admin/coupons', icon: RiCoupon2Fill },
+    { name: 'Freebies', href: '/admin/freebies', icon: FaGift },
+    { name: 'Stores', href: '/admin/stores', icon: FaStore },
     { name: 'Blogs', href: '/admin/blogs', icon: FaBlog },
     { name: 'Users', href: '/admin/users', icon: FaUsers },
     { name: 'Settings', href: '/admin/settings', icon: FaCog },
