@@ -29,10 +29,9 @@ const CouponSchema = new Schema({
   },
   code: {
     type: String,
-    required: true,
-    unique: true,
+    required: false,
     trim: true,
-    uppercase: true
+    uppercase: true,
   },
   title: {
     type: String,

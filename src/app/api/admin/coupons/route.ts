@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
         $or: [
           { title: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } },
-          { code: { $regex: search, $options: 'i' } },
+        //   { code: { $regex: search, $options: 'i' } },
           { store: { $regex: search, $options: 'i' } }
         ]
       };

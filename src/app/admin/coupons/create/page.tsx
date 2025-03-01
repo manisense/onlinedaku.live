@@ -11,7 +11,7 @@ export default function CreateCouponPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'couponcode',
+    type: 'offer',
     code: '',
     store: '',
     website: '',

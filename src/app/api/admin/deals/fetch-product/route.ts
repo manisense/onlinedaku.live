@@ -116,17 +116,34 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       }
     }
     
-    // Image selectors
+    // Image selectors - updated for new Flipkart structure
     const imgSelectors = [
-      '._53J4C-',                // New image selector
-      'img[src*="rukminim"]',    // Common Flipkart image pattern
-      '.CXW8mj ._396cs4'         // Another image selector
+      '._4WELSP ._6lpKCl img.DByuf4',  // New image structure
+      '._53J4C-',                      // Legacy selector
+      'img[src*="rukminim"]',          // Common Flipkart image pattern
+      '.CXW8mj ._396cs4'               // Legacy selector
     ];
     
     for (const selector of imgSelectors) {
       const imgEl = $(selector).first();
       if (imgEl.length) {
-        image = imgEl.attr('src') || '';
+        // Try to get high-res image from srcset first
+        const srcset = imgEl.attr('srcset');
+        if (srcset) {
+          // Parse srcset and get the highest resolution image
+          const srcsetParts = srcset.split(',').map(part => {
+            const [url, descriptor] = part.trim().split(' ');
+            const dpr = descriptor ? parseFloat(descriptor.replace('x', '')) : 1;
+            return { url, dpr };
+          });
+          const highestRes = srcsetParts.reduce((prev, curr) => 
+            curr.dpr > prev.dpr ? curr : prev
+          );
+          image = highestRes.url;
+        } else {
+          // Fallback to src attribute if no srcset
+          image = imgEl.attr('src') || '';
+        }
         if (image) break;
       }
     }
