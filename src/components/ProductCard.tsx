@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import { FaShoppingCart } from 'react-icons/fa';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 interface ProductCardProps {
   product: {
@@ -10,6 +12,7 @@ interface ProductCardProps {
     discountValue: number;
     image: string;
     link: string;
+    id?: string;
   };
 }
 
@@ -18,41 +21,109 @@ const truncateText = (text: string, maxLength: number) => {
 };
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const [recommendedDeals, setRecommendedDeals] = useState<ProductCardProps['product'][]>([]);
+
+  useEffect(() => {
+    const fetchRecommendedDeals = async () => {
+      try {
+        const response = await fetch(`/api/deals/recommended?excludeId=${product.id || ''}&limit=4`);
+        if (response.ok) {
+          const data = await response.json();
+          setRecommendedDeals(data.deals || []);
+        }
+      } catch (error) {
+        console.error('Error fetching recommended deals:', error);
+      }
+    };
+
+    fetchRecommendedDeals();
+  }, [product.id]);
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
-      <div className="relative h-48 w-full">
-        <Image
-          src={product.image}
-          alt={product.title}
-          fill
-          className="object-contain"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </div>
-      <div className="p-4 flex flex-col flex-grow">
-        <h3 className="text-lg font-semibold mb-2 line-clamp-2">
-          {truncateText(product.title, 60)}
-        </h3>
-        <p className="text-gray-600 mb-4 text-sm line-clamp-3">
-          {truncateText(product.description, 150)}
-        </p>
-        <div className="mt-auto">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl font-bold">₹{product.price}</span>
-            <span className="text-gray-500 line-through text-sm">₹{product.originalPrice}</span>
-            <span className="text-green-600 text-sm">({product.discountValue}% off)</span>
+    <div className="space-y-8">
+      <Link href={product.id ? `/deals/${product.id}` : '#'} className="block">
+        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+          <div className="relative h-48 w-full">
+            <Image
+              src={product.image}
+              alt={product.title}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           </div>
-          <a
-            href={product.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-blue-600 text-white w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
-          >
-            <FaShoppingCart />
-            Buy Now
-          </a>
+          <div className="p-4 flex flex-col flex-grow">
+            <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+              {truncateText(product.title, 60)}
+            </h3>
+            <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+              {truncateText(product.description, 150)}
+            </p>
+            <div className="mt-auto">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl font-bold">₹{product.price}</span>
+                <span className="text-gray-500 line-through text-sm">₹{product.originalPrice}</span>
+                <span className="text-green-600 text-sm">({product.discountValue}% off)</span>
+              </div>
+              <button
+                onClick={() => {
+                  window.open(product.link, '_blank', 'noopener,noreferrer');
+                }}
+                className="bg-blue-600 text-white w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+              >
+                <FaShoppingCart />
+                Buy Now
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+      </Link>
+
+      {recommendedDeals && recommendedDeals.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Recommended Deals</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {recommendedDeals.map((deal, index) => (
+              <Link key={deal.id || index} href={deal.id ? `/deals/${deal.id}` : '#'} className="block">
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+                  <div className="relative h-48 w-full">
+                    <Image
+                      src={deal.image}
+                      alt={deal.title}
+                      fill
+                      className="object-contain"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                  <div className="p-4 flex flex-col flex-grow">
+                    <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+                      {truncateText(deal.title, 60)}
+                    </h3>
+                    <p className="text-gray-600 mb-4 text-sm line-clamp-3">
+                      {truncateText(deal.description, 150)}
+                    </p>
+                    <div className="mt-auto">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-xl font-bold">₹{deal.price}</span>
+                        <span className="text-gray-500 line-through text-sm">₹{deal.originalPrice}</span>
+                        <span className="text-green-600 text-sm">({deal.discountValue}% off)</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          window.open(deal.link, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="bg-blue-600 text-white w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+                      >
+                        <FaShoppingCart />
+                        Buy Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

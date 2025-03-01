@@ -98,7 +98,8 @@ export default function DealsPage() {
                       originalPrice: deal.originalPrice,
                       discountValue: deal.discountValue,
                       image: deal.image,
-                      link: deal.link
+                      link: deal.link,
+                      id: deal._id
                     }} 
                   />
                 ))}

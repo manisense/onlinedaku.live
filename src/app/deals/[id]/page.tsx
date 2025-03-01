@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { FaArrowLeft, FaTag, FaShoppingCart, FaClock, FaStore, FaPercent } from 'react-icons/fa';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import MainLayout from '@/components/Layout/MainLayout';
+import ProductCard from '@/components/ProductCard';
 
 interface Deal {
   _id: string;
@@ -24,11 +26,23 @@ interface Deal {
   link: string;
 }
 
+interface RecommendedDeal {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  discountValue: number;
+  image: string;
+  link: string;
+}
+
 export default function DealDetailPage() {
   const params = useParams() as { id: string };
   const dealId = params.id;
   
   const [deal, setDeal] = useState<Deal | null>(null);
+  const [recommendedDeals, setRecommendedDeals] = useState<RecommendedDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -80,6 +94,17 @@ export default function DealDetailPage() {
         
         const data = await response.json();
         setDeal(data.deal);
+        
+        // Fetch random recommended deals
+        try {
+          const recommendedResponse = await fetch(`/api/deals/recommended?limit=4&excludeId=${dealId}`);
+          if (recommendedResponse.ok) {
+            const recommendedData = await recommendedResponse.json();
+            setRecommendedDeals(recommendedData.deals || []);
+          }
+        } catch (recErr) {
+          console.error('Failed to fetch recommended deals:', recErr);
+        }
       } catch (err) {
         setError('Failed to load deal details. Please try again later.');
         console.error(err);
@@ -119,165 +144,182 @@ export default function DealDetailPage() {
   const isExpired = new Date() > new Date(deal.endDate);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
-          <Link
-            href="/deals"
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
-          >
-            <FaArrowLeft className="mr-2" />
-            Back to Deals
-          </Link>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
-            {/* Image Section */}
-            <div className="bg-gray-100 p-6 flex items-center justify-center">
-              <div className="relative h-80 w-full">
-                {deal.image ? (
-                  <Image
-                    src={deal.image}
-                    alt={deal.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-contain"
-                    priority
-                    onError={(e) => {
-                      e.currentTarget.src = '/product-placeholder.png';
-                    }}
-                  />
-                ) : (
-                  <Image 
-                    src="/product-placeholder.svg" 
-                    alt="No image available"
-                    width={300}
-                    height={300}
-                    className="mx-auto"
-                  />
-                )}
-              </div>
-            </div>
-            
-            {/* Content Section */}
-            <div className="p-6">
-              <div className="flex items-center mb-4 space-x-2">
-                <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  deal.store.toLowerCase().includes('amazon') ? 'bg-yellow-100 text-yellow-800' :
-                  deal.store.toLowerCase().includes('flipkart') ? 'bg-blue-100 text-blue-800' :
-                  'bg-green-100 text-green-800'
-                }`}>
-                  <FaStore className="inline mr-1" />
-                  {deal.store}
-                </span>
-                
-                <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
-                  {deal.category}
-                </span>
-                
-                {!isExpired ? (
-                  <span className="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
-                    <FaClock className="inline mr-1" />
-                    {calculateTimeRemaining(deal.endDate)}
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
-                    <FaClock className="inline mr-1" />
-                    Expired
-                  </span>
-                )}
+    <MainLayout>
+      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <Link
+              href="/deals"
+              className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            >
+              <FaArrowLeft className="mr-2" />
+              Back to Deals
+            </Link>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+              {/* Image Section */}
+              <div className="bg-gray-100 p-6 flex items-center justify-center">
+                <div className="relative h-80 w-full">
+                  {deal.image ? (
+                    <Image
+                      src={deal.image}
+                      alt={deal.title}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      className="object-contain"
+                      priority
+                      onError={(e) => {
+                        e.currentTarget.src = '/product-placeholder.png';
+                      }}
+                    />
+                  ) : (
+                    <Image 
+                      src="/product-placeholder.svg" 
+                      alt="No image available"
+                      width={300}
+                      height={300}
+                      className="mx-auto"
+                    />
+                  )}
+                </div>
               </div>
               
-              <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                {deal.title}
-              </h1>
-              
-              <div className="flex items-center mb-6">
-                <div className="flex items-center mr-4">
-                  <div className="text-3xl font-bold text-gray-900">
-                    {formatCurrency(deal.price)}
-                  </div>
-                  {deal.originalPrice > deal.price && (
-                    <div className="ml-2 text-xl text-gray-500 line-through">
-                      {formatCurrency(deal.originalPrice)}
-                    </div>
+              {/* Content Section */}
+              <div className="p-6">
+                <div className="flex items-center mb-4 space-x-2">
+                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${deal.store.toLowerCase().includes('amazon') ? 'bg-yellow-100 text-yellow-800' : deal.store.toLowerCase().includes('flipkart') ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                    <FaStore className="inline mr-1" />
+                    {deal.store}
+                  </span>
+                  
+                  <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
+                    {deal.category}
+                  </span>
+                  
+                  {!isExpired ? (
+                    <span className="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
+                      <FaClock className="inline mr-1" />
+                      {calculateTimeRemaining(deal.endDate)}
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
+                      <FaClock className="inline mr-1" />
+                      Expired
+                    </span>
                   )}
                 </div>
                 
-                <div className="bg-indigo-100 px-4 py-2 rounded-full text-indigo-800">
-                  <FaPercent className="inline mr-1" />
-                  {deal.discountType === 'percentage' ? 
-                    `${deal.discountValue}% OFF` : 
-                    `${formatCurrency(deal.discountValue)} OFF`
-                  }
-                </div>
-              </div>
-              
-              {deal.couponCode && (
-                <div className="mb-6 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                  <div className="text-sm text-indigo-800 mb-1">Coupon Code:</div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <FaTag className="text-indigo-500 mr-2" />
-                      <span className="font-mono text-lg font-bold tracking-wider">{deal.couponCode}</span>
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">
+                  {deal.title}
+                </h1>
+                
+                <div className="flex items-center mb-6">
+                  <div className="flex items-center mr-4">
+                    <div className="text-3xl font-bold text-gray-900">
+                      {formatCurrency(deal.price)}
                     </div>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(deal.couponCode || '');
-                        alert('Coupon code copied to clipboard!');
-                      }}
-                      className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
-                    >
-                      Copy
-                    </button>
+                    {deal.originalPrice > deal.price && (
+                      <div className="ml-2 text-xl text-gray-500 line-through">
+                        {formatCurrency(deal.originalPrice)}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-              
-              <div className="mb-6">
-                <h3 className="text-lg font-medium mb-2">Description</h3>
-                <p className="text-gray-700 whitespace-pre-line">{deal.description}</p>
-              </div>
-              
-              <div className="mb-6">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <div className="text-sm text-gray-500">Valid From</div>
-                    <div className="font-medium">{formatDate(deal.startDate)}</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">Valid Till</div>
-                    <div className="font-medium">{formatDate(deal.endDate)}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <a
-                  href={deal.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`w-full flex items-center justify-center text-center py-3 px-4 rounded-md text-white font-medium transition-colors ${
-                    isExpired ? 
-                    'bg-gray-500 cursor-not-allowed' : 
-                    'bg-indigo-600 hover:bg-indigo-700'
-                  }`}
-                  onClick={(e) => {
-                    if (isExpired) {
-                      e.preventDefault();
-                      alert('This deal has expired.');
+                  
+                  <div className="bg-indigo-100 px-4 py-2 rounded-full text-indigo-800">
+                    <FaPercent className="inline mr-1" />
+                    {deal.discountType === 'percentage' ? 
+                      `${deal.discountValue}% OFF` : 
+                      `${formatCurrency(deal.discountValue)} OFF`
                     }
-                  }}
-                >
-                  <FaShoppingCart className="mr-2" />
-                  {isExpired ? 'Deal Expired' : 'Go to Store & Buy Now'}
-                </a>
+                  </div>
+                </div>
+                
+                {deal.couponCode && (
+                  <div className="mb-6 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                    <div className="text-sm text-indigo-800 mb-1">Coupon Code:</div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <FaTag className="text-indigo-500 mr-2" />
+                        <span className="font-mono text-lg font-bold tracking-wider">{deal.couponCode}</span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(deal.couponCode || '');
+                          alert('Coupon code copied to clipboard!');
+                        }}
+                        className="px-3 py-1 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium mb-2">Description</h3>
+                  <p className="text-gray-700 whitespace-pre-line">{deal.description}</p>
+                </div>
+                
+                <div className="mb-6">
+                  <div className="flex items-center space-x-4">
+                    <div>
+                      <div className="text-sm text-gray-500">Valid From</div>
+                      <div className="font-medium">{formatDate(deal.startDate)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Valid Till</div>
+                      <div className="font-medium">{formatDate(deal.endDate)}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <a
+                    href={deal.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full flex items-center justify-center text-center py-3 px-4 rounded-md text-white font-medium transition-colors ${isExpired ? 'bg-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                    onClick={(e) => {
+                      if (isExpired) {
+                        e.preventDefault();
+                        alert('This deal has expired.');
+                      }
+                    }}
+                  >
+                    <FaShoppingCart className="mr-2" />
+                    {isExpired ? 'Deal Expired' : 'Go to Store & Buy Now'}
+                  </a>
+                </div>
               </div>
             </div>
           </div>
+          
+          {/* Recommended Deals Section */}
+          {recommendedDeals.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Deals You Might Like</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {recommendedDeals.map((recDeal) => (
+                  <ProductCard 
+                    key={recDeal._id} 
+                    product={{
+                      title: recDeal.title,
+                      description: recDeal.description,
+                      price: recDeal.price,
+                      originalPrice: recDeal.originalPrice,
+                      discountValue: recDeal.discountValue,
+                      image: recDeal.image,
+                      link: recDeal.link
+                    }} 
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
