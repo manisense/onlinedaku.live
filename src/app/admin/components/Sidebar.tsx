@@ -33,6 +33,11 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       icon: <FaTag className="mr-3 h-4 w-4" />,
     },
     {
+      name: 'Coupons',
+      href: '/admin/coupons',
+      icon: <FaChartBar className="mr-3 h-4 w-4" />,
+    },
+    {
         name: 'Blog',
         href: '/admin/blog',
         icon: <FaBlog className="mr-3 h-4 w-4" />,

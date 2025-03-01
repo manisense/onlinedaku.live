@@ -1,11 +1,12 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ICoupon extends Document {
-  code: string;
   title: string;
   description: string;
+  type: 'couponcode' | 'offer';
+  code: string;
   store: string;
-  discount: string;
+  website: string;
   expiryDate: Date;
   category: string;
   terms: string;
@@ -15,6 +16,17 @@ export interface ICoupon extends Document {
 }
 
 const CouponSchema = new Schema({
+  type: {
+    type: String,
+    required: true,
+    enum: ['couponcode', 'offer'],
+    default: 'couponcode'
+  },
+  website: {
+    type: String,
+    required: true,
+    trim: true
+  },
   code: {
     type: String,
     required: true,

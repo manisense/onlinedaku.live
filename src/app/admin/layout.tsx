@@ -13,8 +13,10 @@ import {
   FaTimes,
   FaBlog
 } from 'react-icons/fa';
+import { RiCoupon2Fill } from "react-icons/ri";
 import toast from 'react-hot-toast';
 import { confirmLogout } from '@/utils/confirmDialog';
+import Loader from '@/components/ui/Loader';
 
 export default function AdminLayout({
   children,
@@ -30,6 +32,7 @@ export default function AdminLayout({
   const navigation = [
     { name: 'Dashboard', href: '/admin/dashboard', icon: FaChartBar },
     { name: 'Deals', href: '/admin/deals', icon: FaTags },
+    { name: 'Coupons', href: '/admin/coupons', icon:  RiCoupon2Fill},
     { name: 'Blogs', href: '/admin/blogs', icon: FaBlog },
     { name: 'Users', href: '/admin/users', icon: FaUsers },
     { name: 'Settings', href: '/admin/settings', icon: FaCog },
@@ -107,7 +110,7 @@ export default function AdminLayout({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-lg">Loading...</div>
+        <Loader text='loading' size='large' />
       </div>
     );
   }

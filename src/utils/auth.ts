@@ -8,7 +8,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret';
 
 export async function verifyToken(request: NextRequest) {
   try {
-    const token = request.cookies.get('adminToken')?.value;
+    // Check for token in cookies first
+    let token = request.cookies.get('adminToken')?.value;
+    
+    // If not in cookies, check Authorization header
+    if (!token) {
+      const authHeader = request.headers.get('Authorization');
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+      }
+    }
+    
     if (!token) return null;
 
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
