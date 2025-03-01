@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import MainLayout from '@/components/Layout/MainLayout';
 import FreebieCard from '@/components/FreebieCard';
+import Loader from '@/components/ui/Loader';
 
 interface Freebie {
   _id: string;
@@ -106,7 +107,7 @@ export default function FreebieDetailPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-500"></div>
+ <Loader size='large'  text='Loading...' />
       </div>
     );
   }

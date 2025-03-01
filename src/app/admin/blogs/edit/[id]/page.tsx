@@ -190,7 +190,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader size='medium' text='Loading blog post...' />
+        <Loader size='large' text='Loading blog post...' />
       </div>
     );
   }

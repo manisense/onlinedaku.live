@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FaPlus } from 'react-icons/fa';
+import Loader from '@/components/ui/Loader';
 
 interface Coupon {
   _id: string;
@@ -75,7 +76,7 @@ export default function CouponsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-8">Loading...</div>
+         <Loader size='large'  text='Loading...' />
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">

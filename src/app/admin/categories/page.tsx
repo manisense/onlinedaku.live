@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import {  toast } from 'react-hot-toast';
 import { confirmDelete } from '@/utils/confirmDialog';
+import Loader from '@/components/ui/Loader';
 
 interface Category {
   _id: string;
@@ -105,7 +106,7 @@ export default function CategoriesManagement() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loader size='large'  text='Loading...' />;
   }
 
   return (

@@ -156,7 +156,7 @@ const CouponsSection: React.FC = () => {
         
         {loading ? (
           <div className="w-full flex justify-center items-center py-8">
-            <Loader size="medium" text="Loading coupons..." />
+            <Loader size="large" text="Loading coupons..." />
           </div>
         ) : error ? (
           <div className="w-full text-center py-8 text-red-600">{error}</div>

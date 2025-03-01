@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
+import Loader from '@/components/ui/Loader';
 
 interface Store {
   _id: string;
@@ -99,7 +100,7 @@ export default function EditStorePage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+         <Loader size='large'  text='Loading...' />
       </div>
     );
   }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { FaUsers, FaUserCheck, FaUserPlus, FaUserClock } from 'react-icons/fa';
 import StatsCard from '../../dashboard/components/StatsCard';
+import Loader from '@/components/ui/Loader';
 
 interface UserStats {
   totalUsers: number;
@@ -44,7 +45,7 @@ export default function UserStatsSection() {
   }, []);
 
   if (loading) {
-    return <div className="flex justify-center py-4">Loading...</div>;
+    return  <Loader size='large'  text='Loading...' />;
   }
 
   if (!stats) {

@@ -2,6 +2,7 @@
 
 import MainLayout from '@/components/Layout/MainLayout';
 import SearchBar from '@/components/Search/SearchBar';
+import Loader from '@/components/ui/Loader';
 import { useState, useEffect } from 'react';
 import { FaCopy, FaCheck } from 'react-icons/fa';
 
@@ -90,8 +91,8 @@ export default function CouponsPage() {
           {/* Loading State */}
           {loading ? (
             <div className="text-center py-12">
-              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-indigo-600 border-r-transparent"></div>
-            </div>
+               <Loader size='large'  text='Loading...' />
+                          </div>
           ) : (
             /* Coupons Grid */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

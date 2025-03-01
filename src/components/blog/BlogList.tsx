@@ -38,7 +38,7 @@ export default function BlogList({ initialBlogs, totalPages }: BlogListProps) {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader size='medium' text='Loading blogs..' />
+        <Loader size='large' text='Loading blogs..' />
       </div>
       
     );

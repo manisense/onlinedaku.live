@@ -143,7 +143,7 @@ const FreebiesSection: React.FC = () => {
         
         {loading ? (
           <div className="w-full flex justify-center items-center py-8">
-            <Loader size="medium" text="Loading freebies..." />
+            <Loader size="large" text="Loading freebies..." />
           </div>
         ) : error ? (
           <div className="w-full text-center py-8 text-red-600">{error}</div>
