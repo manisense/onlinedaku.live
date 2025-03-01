@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaChevronDown, FaChevronUp, FaSearch } from 'react-icons/fa';
 import MainLayout from '@/components/Layout/MainLayout';
+import SearchBar from '@/components/Search/SearchBar';
 
 interface FAQItem {
   id: string;
@@ -119,6 +120,7 @@ const FAQPage = () => {
 
   return (
     <MainLayout>
+       <SearchBar />
       <main className="bg-white min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white overflow-hidden">

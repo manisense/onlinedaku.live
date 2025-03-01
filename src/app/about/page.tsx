@@ -2,9 +2,9 @@
 
 import React from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { FaLinkedin, FaTwitter, FaEnvelope, FaArrowRight } from 'react-icons/fa';
+import { FaLinkedin, FaTwitter, FaEnvelope } from 'react-icons/fa';
 import MainLayout from '@/components/Layout/MainLayout';
+import SearchBar from '@/components/Search/SearchBar';
 
 const AboutPage = () => {
   // Team members data
@@ -84,6 +84,7 @@ const AboutPage = () => {
 
   return (
     <MainLayout>
+       <SearchBar />
       <main className="bg-white">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white overflow-hidden">
@@ -267,58 +268,6 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Call to Action Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-xl overflow-hidden">
-            <div className="flex flex-col md:flex-row">
-              <div className="md:w-3/5 p-8 md:p-12">
-                <h2 className="text-3xl font-bold text-white mb-4">Join Our Community of Smart Shoppers</h2>
-                <p className="text-indigo-100 mb-6">
-                  Get the best deals delivered directly to your inbox. No spam, just savings!
-                </p>
-                <form className="space-y-4">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="email"
-                      placeholder="Your email address"
-                      className="px-4 py-3 rounded-md flex-1 text-gray-900"
-                      required
-                    />
-                    <button
-                      type="submit"
-                      className="bg-indigo-800 hover:bg-indigo-900 text-white px-6 py-3 rounded-md font-medium transition-colors duration-300"
-                    >
-                      Subscribe
-                    </button>
-                  </div>
-                  <p className="text-xs text-indigo-200">
-                    By subscribing, you agree to our Privacy Policy. We respect your privacy and will never share your information.
-                  </p>
-                </form>
-              </div>
-              <div className="md:w-2/5 bg-indigo-800 p-8 md:p-12 flex flex-col justify-center">
-                <div className="space-y-4">
-                  <Link 
-                    href="/deals" 
-                    className="flex items-center justify-between bg-white text-indigo-700 px-6 py-3 rounded-md font-medium hover:bg-indigo-50 transition-colors duration-300"
-                  >
-                    <span>Browse Latest Deals</span>
-                    <FaArrowRight />
-                  </Link>
-                  <Link 
-                    href="/contact" 
-                    className="flex items-center justify-between bg-indigo-700 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-600 transition-colors duration-300"
-                  >
-                    <span>Contact Us</span>
-                    <FaArrowRight />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </main>
     </MainLayout>
   );

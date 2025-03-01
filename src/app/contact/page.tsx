@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaWhatsapp, FaTelegram, FaArrowRight } from 'react-icons/fa';
 import MainLayout from '@/components/Layout/MainLayout';
+import SearchBar from '@/components/Search/SearchBar';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -117,6 +118,7 @@ const ContactPage = () => {
 
   return (
     <MainLayout>
+       <SearchBar />
       <main className="bg-white min-h-screen">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white overflow-hidden">
