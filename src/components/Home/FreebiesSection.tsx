@@ -47,7 +47,7 @@ const FreebieCard: React.FC<Freebie> = ({ title, image, store, link }) => {
 const FreebiesSection: React.FC = () => {
   const [freebies, setFreebies] = useState<Freebie[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFreebies = async () => {

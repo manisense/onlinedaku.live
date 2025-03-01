@@ -105,6 +105,7 @@ const DealCarousel: React.FC = () => {
                 {deals.map((deal, index) => (
                   <div
                     key={deal._id}
+                    id={index.toString()}
                     className="px-2 w-48 sm:px-3 md:px-4"
                     style={{ flex: `0 0 ${100 / 3}%` }}
                   >

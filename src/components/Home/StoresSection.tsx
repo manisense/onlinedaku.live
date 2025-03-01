@@ -40,7 +40,7 @@ const StoreCard: React.FC<Store> = ({ title, image, link }) => {
 const StoresSection: React.FC = () => {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStores = async () => {

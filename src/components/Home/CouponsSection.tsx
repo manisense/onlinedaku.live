@@ -50,7 +50,7 @@ const CouponCard: React.FC<Coupon> = ({ title, image, store, discount, link }) =
 const CouponsSection: React.FC = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCoupons = async () => {
