@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import MainLayout from '@/components/Layout/MainLayout';
 import SearchBar from '@/components/Search/SearchBar';
-import { useLoading } from '@/context/LoadingContext';
+import Loader from '@/components/ui/Loader';
 
 interface Store {
   _id: string;
@@ -24,8 +24,10 @@ const categories = ['All', 'Multi-Category', 'Electronics', 'Fashion', 'Home & G
 
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[]>([]);
+  const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     const fetchStores = async () => {
       try {
         const response = await fetch('/api/stores');
@@ -45,23 +47,14 @@ export default function StoresPage() {
     };
 
     fetchStores();
+
+      setLoading(false);
+
   }, []);
 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
-  const { showLoader, hideLoader } = useLoading();
-  
-  useEffect(() => {
-    // Simulate loading for demonstration
-    showLoader('Loading store information...');
-    
-    // Simulate API call
-    const timer = setTimeout(() => {
-      hideLoader();
-    }, 1500);
-    
-    return () => clearTimeout(timer);
-  }, [showLoader, hideLoader]);
+
 
   const filteredStores = stores.filter(store =>
     selectedCategory === 'All' ? true : store.category === selectedCategory
@@ -73,6 +66,8 @@ export default function StoresPage() {
 
       <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+
        
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
           <div className="flex flex-wrap gap-2">
@@ -100,6 +95,11 @@ export default function StoresPage() {
         </div>
 
         {/* Stores Grid */}
+        {isLoading ? (
+            <div className="text-center py-12">
+               <Loader size='large'  text='Loading...' />
+                          </div>
+          ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStores.map(store => (
             <div key={store._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -153,7 +153,8 @@ export default function StoresPage() {
               </div>
             </div>
           ))}
-        </div>
+        </div> 
+          )}
       </div>
       </div>
     </MainLayout>
