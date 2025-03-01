@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FaExchangeAlt, FaShoppingBag, FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
+import { FaExchangeAlt,  FaInfoCircle, FaQuestionCircle } from 'react-icons/fa';
 import MainLayout from '@/components/Layout/MainLayout';
 
 const ReturnPolicyPage = () => {
@@ -113,7 +113,7 @@ const ReturnPolicyPage = () => {
                 Last Updated: {lastUpdated}
               </p>
               <p className="text-gray-600 text-sm mt-2">
-                OnlineDaku is a deal discovery platform that connects you with offers from various retailers. As we are not a direct retailer, all purchases are made through third-party websites, and returns are subject to each retailer's specific return policy.
+                OnlineDaku is a deal discovery platform that connects you with offers from various retailers. As we are not a direct retailer, all purchases are made through third-party websites, and returns are subject to each retailers specific return policy.
               </p>
             </div>
 
@@ -124,7 +124,7 @@ const ReturnPolicyPage = () => {
               </p>
               <ul className="list-disc pl-6 mb-6">
                 <li>All returns must be initiated and processed through the retailer where you made your purchase</li>
-                <li>Return eligibility, timeframes, and conditions are determined by each retailer's policy</li>
+                <li>Return eligibility, timeframes, and conditions are determined by each retailers policy</li>
                 <li>Refunds are processed by the retailer according to their refund procedures</li>
               </ul>
               <p>
@@ -159,7 +159,7 @@ const ReturnPolicyPage = () => {
             <div className="mb-16">
               <h2 className="text-2xl font-bold text-gray-900 mb-8">Common Retailer Return Policies</h2>
               <p className="text-gray-700 mb-6">
-                Below is a general overview of return policies for some popular retailers. Please note that these are subject to change, and you should always check the retailer's official website for the most current policy.
+                Below is a general overview of return policies for some popular retailers. Please note that these are subject to change, and you should always check the retailers official website for the most current policy.
               </p>
               
               <div className="overflow-x-auto">
@@ -217,7 +217,7 @@ const ReturnPolicyPage = () => {
                 <div className="md:w-2/3 mb-6 md:mb-0 md:pr-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-4">Need More Help?</h2>
                   <p className="text-gray-700 mb-4">
-                    If you're experiencing issues with a return or have questions about a retailer's policy, our support team is here to help guide you.
+                    If youre experiencing issues with a return or have questions about a retailers policy, our support team is here to help guide you.
                   </p>
                   <div className="flex space-x-4">
                     <Link 

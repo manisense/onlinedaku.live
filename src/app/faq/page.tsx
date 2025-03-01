@@ -221,7 +221,7 @@ const FAQPage = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Still Have Questions?</h2>
             <p className="text-gray-700 text-lg mb-8">
-              Can't find the answer you're looking for? Please contact our friendly support team.
+              Cant find the answer youre looking for? Please contact our friendly support team.
             </p>
             <Link 
               href="/contact" 

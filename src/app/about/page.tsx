@@ -94,7 +94,7 @@ const AboutPage = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">About OnlineDaku</h1>
             <p className="text-xl md:text-2xl mb-8 text-indigo-100">
-              We're on a mission to help Indians save money on every online purchase.
+              Were on a mission to help Indians save money on every online purchase.
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@ const AboutPage = () => {
                 Founded in 2020, OnlineDaku started with a simple idea: everyone deserves to get the best value for their money when shopping online.
               </p>
               <p className="text-gray-700 leading-relaxed">
-                What began as a small WhatsApp group sharing deals among friends quickly grew into one of India's most trusted platforms for discovering discounts, coupons, and shopping tips.
+                What began as a small WhatsApp group sharing deals among friends quickly grew into one of Indias most trusted platforms for discovering discounts, coupons, and shopping tips.
               </p>
               <p className="text-gray-700 leading-relaxed">
                 Today, we help millions of shoppers save money every month by curating the best deals from hundreds of online stores and brands across India.
@@ -149,7 +149,7 @@ const AboutPage = () => {
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Save Money</h3>
               <p className="text-gray-700">
-                We're committed to helping our community save on every purchase by finding and sharing the best deals, discounts, and shopping strategies.
+                Were committed to helping our community save on every purchase by finding and sharing the best deals, discounts, and shopping strategies.
               </p>
             </div>
             
@@ -244,7 +244,7 @@ const AboutPage = () => {
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
             <p className="text-gray-700 text-lg">
-              Don't just take our word for it - hear from our community of smart shoppers.
+              Dont just take our word for it - hear from our community of smart shoppers.
             </p>
           </div>
           

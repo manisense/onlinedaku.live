@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaWhatsapp, FaTelegram, FaArrowRight } from 'react-icons/fa';
 import MainLayout from '@/components/Layout/MainLayout';
@@ -128,7 +127,7 @@ const ContactPage = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Contact Us</h1>
             <p className="text-xl md:text-2xl mb-8 text-indigo-100">
-              Have questions or feedback? We'd love to hear from you.
+              Have questions or feedback? Wed love to hear from you.
             </p>
           </div>
         </div>
@@ -161,7 +160,7 @@ const ContactPage = () => {
               
               {submitSuccess && (
                 <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-md">
-                  Thank you for your message! We'll get back to you soon.
+                  Thank you for your message! Well get back to you soon.
                 </div>
               )}
               
@@ -278,7 +277,7 @@ const ContactPage = () => {
           <div className="max-w-3xl mx-auto text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Visit Our Office</h2>
             <p className="text-gray-600">
-              We're located in the heart of Mumbai. Feel free to drop by during business hours!
+              Were located in the heart of Mumbai. Feel free to drop by during business hours!
             </p>
           </div>
           

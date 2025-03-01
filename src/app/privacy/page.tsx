@@ -37,7 +37,7 @@ const PrivacyPolicyPage = () => {
                 Last Updated: {lastUpdated}
               </p>
               <p className="text-gray-600 text-sm mt-2">
-                This Privacy Policy describes how OnlineDaku ("we," "us," or "our") collects, uses, and shares your personal information when you visit our website, use our services, or otherwise interact with us. Please read this policy carefully to understand our practices regarding your information.
+                This Privacy Policy describes how OnlineDaku (we, us, or our) collects, uses, and shares your personal information when you visit our website, use our services, or otherwise interact with us. Please read this policy carefully to understand our practices regarding your information.
               </p>
             </div>
 
@@ -162,10 +162,10 @@ const PrivacyPolicyPage = () => {
                 <li>The right to data portability</li>
               </ul>
               <p className="mb-6">
-                To exercise these rights, please contact us using the information provided in the "Contact Us" section below.
+                To exercise these rights, please contact us using the information provided in the Contact Us section below.
               </p>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Children's Privacy</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">9. Childrens Privacy</h2>
               <p className="mb-6">
                 Our website is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe that your child has provided us with personal information, please contact us so that we can delete the information.
               </p>

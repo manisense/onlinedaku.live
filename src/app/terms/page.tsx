@@ -36,7 +36,7 @@ const TermsOfServicePage = () => {
                 Last Updated: {lastUpdated}
               </p>
               <p className="text-gray-600 text-sm mt-2">
-                These Terms of Service ("Terms") govern your access to and use of the OnlineDaku website, services, and applications (collectively, the "Services"). Please read these Terms carefully, and contact us if you have any questions.
+                These Terms of Service (Terms) govern your access to and use of the OnlineDaku website, services, and applications (collectively, the Services). Please read these Terms carefully, and contact us if you have any questions.
               </p>
             </div>
 
@@ -48,7 +48,7 @@ const TermsOfServicePage = () => {
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Changes to Terms</h2>
               <p className="mb-6">
-                We may modify the Terms at any time. If we do this, we will post the changes on this page and update the "Last Updated" date at the top of this page. It is your responsibility to review these Terms frequently. Your continued use of the Services following the posting of revised Terms means that you accept and agree to the changes.
+                We may modify the Terms at any time. If we do this, we will post the changes on this page and update the Last Updated date at the top of this page. It is your responsibility to review these Terms frequently. Your continued use of the Services following the posting of revised Terms means that you accept and agree to the changes.
               </p>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">3. Using Our Services</h2>
@@ -57,9 +57,9 @@ const TermsOfServicePage = () => {
               </p>
               <ul className="list-disc pl-6 mb-6">
                 <li>In any way that violates any applicable national, federal, state, local, or international law or regulation</li>
-                <li>To transmit, or procure the sending of, any advertising or promotional material, including any "junk mail," "chain letter," "spam," or any other similar solicitation</li>
+                <li>To transmit, or procure the sending of, any advertising or promotional material, including any junk mail chain letter  or any other similar solicitation</li>
                 <li>To impersonate or attempt to impersonate OnlineDaku, an OnlineDaku employee, another user, or any other person or entity</li>
-                <li>To engage in any other conduct that restricts or inhibits anyone's use or enjoyment of the Services, or which may harm OnlineDaku or users of the Services</li>
+                <li>To engage in any other conduct that restricts or inhibits anyones use or enjoyment of the Services, or which may harm OnlineDaku or users of the Services</li>
               </ul>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">4. User Accounts</h2>
@@ -80,7 +80,7 @@ const TermsOfServicePage = () => {
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">6. User-Generated Content</h2>
               <p className="mb-4">
-                Our Services may allow you to post, submit, or transmit content such as comments, reviews, or deal submissions ("User Content"). By providing any User Content, you grant us and our affiliates a nonexclusive, royalty-free, perpetual, irrevocable, and fully sublicensable right to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, and display such content throughout the world in any media.
+                Our Services may allow you to post, submit, or transmit content such as comments, reviews, or deal submissions User Content. By providing any User Content, you grant us and our affiliates a nonexclusive, royalty-free, perpetual, irrevocable, and fully sublicensable right to use, reproduce, modify, adapt, publish, translate, create derivative works from, distribute, and display such content throughout the world in any media.
               </p>
               <p className="mb-6">
                 You represent and warrant that:
@@ -109,7 +109,7 @@ const TermsOfServicePage = () => {
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">10. Disclaimer of Warranties</h2>
               <p className="mb-6">
-                Your use of the Services is at your sole risk. The Services are provided on an "AS IS" and "AS AVAILABLE" basis. The Services are provided without warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement, or course of performance.
+                Your use of the Services is at your sole risk. The Services are provided on an AS IS and AS AVAILABLE basis. The Services are provided without warranties of any kind, whether express or implied, including, but not limited to, implied warranties of merchantability, fitness for a particular purpose, non-infringement, or course of performance.
               </p>
 
               <h2 className="text-2xl font-bold text-gray-900 mb-4">11. Governing Law</h2>
