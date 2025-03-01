@@ -28,7 +28,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #ffffff;
     --foreground: #ededed;
     --tw-prose-body: #d1d5db;
     --tw-prose-headings: #fff;

@@ -79,7 +79,7 @@ export default function DealsPage() {
           
           {isLoading ? (
             <div className="flex justify-center py-10">
-              <Loader size="medium" text="Finding deals for you..." />
+              <Loader size="large" text="Finding deals for you..." />
             </div>
           ) : deals.length === 0 ? (
             <div className="text-center py-10">

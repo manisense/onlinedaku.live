@@ -8,6 +8,11 @@ import Footer from "@/components/Footer";
 
 
 import DealCarousel from '@/components/Home/DealCarousel';
+import HomePageSections from '@/components/Home/HomePageSections';
+import CouponsSection from '@/components/Home/CouponsSection';
+import FreebiesSection from '@/components/Home/FreebiesSection';
+import StoresSection from '@/components/Home/StoresSection';
+import DealsSection from '@/components/Home/DealsSection';
 
 export default function Home() {
   return (
@@ -17,10 +22,13 @@ export default function Home() {
       </div>
       <SearchBar />
       <Categories />
-      <div className="min-h-screen bg-white">
-        <DealCarousel />
+      <DealCarousel />
+      <div className='sections bg-white my-5 py-5'>
+      <DealsSection/>
+      <CouponsSection />
+      <FreebiesSection />
+      <StoresSection />
       </div>
-      <FeaturedDeals />
       <Footer />
     </main>
   );
