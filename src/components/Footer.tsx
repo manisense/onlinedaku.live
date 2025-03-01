@@ -26,9 +26,9 @@ const Footer: React.FC = () => {
 
   const secondaryNavLinks = [
     { name: 'About Us', href: '/about' },
-    { name: 'Contact', href: '/contact' },
+    { name: 'Contact Us', href: '/contact' },
     { name: 'FAQ', href: '/faq' },
-    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Terms of Conditions', href: '/terms' },
     { name: 'Privacy Policy', href: '/privacy' },
     { name: 'Return Policy', href: '/returns' }
   ];
