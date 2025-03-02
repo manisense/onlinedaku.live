@@ -58,8 +58,11 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
       console.error('Product extraction error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Detailed extraction error:', errorMessage);
       return NextResponse.json({
-        error: 'Could not extract product information. Try another URL or add manually.',
+        error: 'Could not extract product information. Please verify the URL is correct and the product page is accessible.',
+        details: errorMessage
       }, { status: 422 });
     }
   } catch (error) {
@@ -80,22 +83,29 @@ function parseProductData(html: string, store: ProductData['store'], url: string
   let image = '';
   
   if (store === 'flipkart') {
-    // Title selectors
+    // Title selectors - updated for latest Flipkart structure
     title = $('.VU-ZEz').first().text().trim() || 
-            $('.B_NuCI').first().text().trim();
+            $('.B_NuCI').first().text().trim() || 
+            $('h1.yhB1nd').first().text().trim() ||
+            $('._35KyD6').first().text().trim() ||
+            $('span[class*="title"]').first().text().trim();
     
-    // Price selectors - try all known Flipkart price selectors
+    // Price selectors - updated for latest Flipkart structure
     const priceSelectors = [
-      '.Nx9bqj',             // New price selector
-      '._30jeq3._16Jk6d',    // Old price selector
-      '._16Jk6d'             // Another price variant
+      '.Nx9bqj.CxhGGd',     // Latest price selector
+      '._30jeq3',           // Current price selector
+      '._30jeq3._16Jk6d',   // Alternative price selector
+      '.CEmiEU',            // New price selector
+      '[class*="selling-price"]', // Generic price class
+      '.a-price-whole'      // Alternative price format
     ];
     
-    // Original price selectors - try all known Flipkart MRP selectors
+    // Original price selectors - updated for latest Flipkart structure
     const originalPriceSelectors = [
-      '.yRaY8j',             // New MRP selector
-      '._3I9_wc._2p6lqe',    // Old MRP selector
-      '._2p6lqe'             // Another MRP variant
+      '._3I9_wc',           // Current MRP selector
+      '._3I9_wc._2p6lqe',   // Alternative MRP selector
+      '.yRaY8j',            // New MRP selector
+      '._2p6lqe'            // Another MRP variant
     ];
 
     // Try each price selector
@@ -116,14 +126,19 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       }
     }
     
-    // Image selectors - updated for new Flipkart structure
+    // Image selectors - updated for latest Flipkart structure
     const imgSelectors = [
-      '._4WELSP ._6lpKCl img.DByuf4',  // New image structure
-      '._53J4C-',                      // Legacy selector
-      'img[src*="rukminim"]',          // Common Flipkart image pattern
-      '.CXW8mj ._396cs4'               // Legacy selector
+      'img.DByuf4.IZexXJ',            // Latest image selector
+      'img._396cs4',                  // Current primary image selector
+      'img[src*="rukminim"]',         // Common Flipkart image pattern
+      '._2r_T1I',                     // New image selector
+      '._396cs4._2amPTt._3qGmMb',    // Alternative image selector
+      '._3exPp9',                     // Another image variant
+      'img[class*="product-image"]',  // Generic product image
+      'img._2amPTt'                   // Another common image class
     ];
     
+    // Try each image selector
     for (const selector of imgSelectors) {
       const imgEl = $(selector).first();
       if (imgEl.length) {
@@ -144,31 +159,36 @@ function parseProductData(html: string, store: ProductData['store'], url: string
           // Fallback to src attribute if no srcset
           image = imgEl.attr('src') || '';
         }
-        if (image) break;
+        
+        // If we found an image, try to get the highest resolution version
+        if (image) {
+          // Replace resolution in image URL to get highest quality
+          image = image.replace(/\d+x\d+/g, '832x832');
+          break;
+        }
       }
     }
     
-    // Description selectors - including the new one
+    // Description selectors - updated for latest Flipkart structure
     const descriptionSelectors = [
-      '._5Pmv5S ._1IK+Dg',      // New detailed description
-      '.sBVJqn',                // Product specifications
-      '._1mXcCf',               // Old description
-      '.RmoJUa',                // Another description variant
-      '._1AN87F'                // Yet another description variant
+      '.X3BRps',                // Current description selector
+      '._1mXcCf.RmoJUa',        // Product highlights
+      '.X3BRps ._2-N8zT',       // Detailed description
+      '.MocXoX',                // Product specifications
+      '._2418kt',               // Another description variant
+      '.RmoJUa'                 // Additional description class
     ];
     
     const descriptionParts: string[] = [];
     
     // Try to extract structured product details
-    if ($('._5Pmv5S').length) {
-      $('.sBVJqn .row').each((_, row) => {
-        const label = $(row).find('._9NUIO9').text().trim();
-        const value = $(row).find('.-gXFvC').text().trim();
-        if (label && value) {
-          descriptionParts.push(`${label}: ${value}`);
-        }
-      });
-    }
+    $('._14cfVK').each((_, row) => {
+      const label = $(row).find('._1hKmbr').text().trim();
+      const value = $(row).find('._21lJbe').text().trim();
+      if (label && value) {
+        descriptionParts.push(`${label}: ${value}`);
+      }
+    });
     
     // If we found structured details, use those
     if (descriptionParts.length > 0) {
