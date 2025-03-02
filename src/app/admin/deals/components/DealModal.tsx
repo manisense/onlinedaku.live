@@ -8,7 +8,7 @@ interface Deal {
   title: string;
   description: string;
   store: string;
-  category: string;
+  category: string; // This will be the category ID
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   startDate: string;
@@ -26,7 +26,13 @@ interface DealModalProps {
   deal?: Deal | null;
 }
 
-const CATEGORIES = ['Electronics', 'Fashion', 'Food', 'Travel', 'Other'];
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+}
 
 export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModalProps) {
   const [formData, setFormData] = useState<DealFormData>({
@@ -43,6 +49,8 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
     if (deal) {
@@ -60,6 +68,35 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
       });
     }
   }, [deal]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch('/api/admin/categories', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchCategories();
+    }
+  }, [isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -161,13 +198,16 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
               onChange={handleChange}
               name="category"
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              disabled={loadingCategories}
             >
-              {CATEGORIES.map((category) => (
-                <option key={category} value={category}>
-                  {category}
+              <option value="">Select a category</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
                 </option>
               ))}
             </select>
+            {loadingCategories && <p className="text-sm text-gray-500 mt-1">Loading categories...</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -255,4 +295,4 @@ export default function DealModal({ isOpen, onClose, onSubmit, deal }: DealModal
       </div>
     </div>
   );
-} 
+}

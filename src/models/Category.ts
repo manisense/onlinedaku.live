@@ -1,6 +1,20 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const CategorySchema = new mongoose.Schema({
+export interface ICategory extends Document {
+  name: string;
+  slug: string;
+  description?: string;
+  parentCategory?: mongoose.Types.ObjectId;
+  tags?: string[];
+  icon?: string;
+  image?: string;
+  isActive: boolean;
+  displayOrder?: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const CategorySchema = new Schema<ICategory>({
   name: {
     type: String,
     required: [true, 'Name is required'],
@@ -15,10 +29,34 @@ const CategorySchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true,
+    default: '',
+  },
+  parentCategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    default: null,
+  },
+  tags: [{
+    type: String,
+    trim: true,
+  }],
+  icon: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  image: {
+    type: String,
+    trim: true,
+    default: '',
   },
   isActive: {
     type: Boolean,
     default: true,
+  },
+  displayOrder: {
+    type: Number,
+    default: 0,
   },
 }, {
   timestamps: true,
@@ -32,4 +70,13 @@ CategorySchema.pre('save', function(next) {
   next();
 });
 
-export default mongoose.models.Category || mongoose.model('Category', CategorySchema); 
+// Create indexes for faster queries
+// Removed duplicate slug index as it's already indexed via unique: true
+CategorySchema.index({ parentCategory: 1 });
+CategorySchema.index({ isActive: 1 });
+CategorySchema.index({ tags: 1 });
+CategorySchema.index({ name: 'text', description: 'text' }); // Add text index for search functionality
+
+const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+
+export default Category;

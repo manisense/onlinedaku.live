@@ -58,10 +58,9 @@ const CouponSchema = new Schema({
     required: true
   },
   category: {
-    type: String,
-    required: true,
-    trim: true
-    // Removed index: true to avoid duplicate
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true
   },
   terms: {
     type: String,

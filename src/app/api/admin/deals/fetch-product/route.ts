@@ -12,6 +12,7 @@ interface ProductData {
   image: string;
   store: 'amazon' | 'flipkart' | 'myntra' | 'other';
   link: string;
+  category?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -28,11 +29,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Normalize URL and determine store
+    let html = '';
+    let store: ProductData['store'] = 'other';
+    
     try {
       const normalizedUrl = new URL(url);
       const hostname = normalizedUrl.hostname;
       
-      let store: ProductData['store'] = 'other';
       if (hostname.includes('amazon')) store = 'amazon';
       else if (hostname.includes('flipkart')) store = 'flipkart';
       else if (hostname.includes('myntra')) store = 'myntra';
@@ -48,7 +51,7 @@ export async function POST(req: NextRequest) {
         timeout: 10000
       });
 
-      const html = response.data;
+      html = response.data;
       const productData = parseProductData(html, store, url);
 
       return NextResponse.json({ 
@@ -60,6 +63,35 @@ export async function POST(req: NextRequest) {
       console.error('Product extraction error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Detailed extraction error:', errorMessage);
+      // Try to extract partial data even if there was an error
+      try {
+        if (!html) {
+          throw new Error('No HTML content available');
+        }
+        
+        const $ = cheerio.load(html);
+        const partialData: Partial<ProductData> = {
+          title: $('title').text().trim() || '',
+          description: $('meta[name="description"]').attr('content') || '',
+          store,
+          link: url
+        };
+        
+        // Try to get image from og:image
+        const ogImage = $('meta[property="og:image"]').attr('content');
+        if (ogImage) partialData.image = ogImage;
+        
+        // Return partial data if we have at least some information
+        if (partialData.title || partialData.description || partialData.image) {
+          return NextResponse.json({
+            error: 'Could not extract complete product information.',
+            partialData
+          }, { status: 422 });
+        }
+      } catch (partialError) {
+        console.error('Failed to extract partial data:', partialError);
+      }
+      
       return NextResponse.json({
         error: 'Could not extract product information. Please verify the URL is correct and the product page is accessible.',
         details: errorMessage
@@ -81,14 +113,61 @@ function parseProductData(html: string, store: ProductData['store'], url: string
   let originalPrice = 0;
   let description = '';
   let image = '';
+  let category = '';
   
   if (store === 'flipkart') {
-    // Title selectors - updated for latest Flipkart structure
-    title = $('.VU-ZEz').first().text().trim() || 
-            $('.B_NuCI').first().text().trim() || 
-            $('h1.yhB1nd').first().text().trim() ||
-            $('._35KyD6').first().text().trim() ||
-            $('span[class*="title"]').first().text().trim();
+    // Title selectors - updated for latest Flipkart structure with more robust selectors
+    const titleSelectors = [
+      '.VU-ZEz',
+      '.B_NuCI',
+      'h1.yhB1nd',
+      '._35KyD6',
+      'span[class*="title"]',
+      'h1',                    // Generic h1 tag
+      '.G6XhRU',               // Another Flipkart title class
+      '._29OxBi',              // Alternative title class
+      'meta[property="og:title"]', // Meta title as fallback
+      '.Yn2Ei5'                // Flipkart grocery title class
+    ];
+    
+    // Try each title selector
+    for (const selector of titleSelectors) {
+      if (selector.startsWith('meta')) {
+        // Handle meta tags differently
+        const metaContent = $(selector).attr('content');
+        if (metaContent && metaContent.trim()) {
+          title = metaContent.trim();
+          break;
+        }
+      } else {
+        const titleText = $(selector).first().text().trim();
+        if (titleText) {
+          title = titleText;
+          break;
+        }
+      }
+    }
+            
+    // Extract category from Flipkart breadcrumb
+    const breadcrumbSelectors = [
+      '._3GIHBu',  // Common breadcrumb container
+      '._1MR4o5',  // Alternative breadcrumb
+      '.V_ZJxz',   // Another breadcrumb variant
+      '[class*="breadcrumb"]', // Generic breadcrumb class
+      '._1MbXnE'   // Flipkart grocery breadcrumb
+    ];
+    
+    for (const selector of breadcrumbSelectors) {
+      const breadcrumbContainer = $(selector);
+      if (breadcrumbContainer.length) {
+        // Get the second-to-last breadcrumb item (usually the category)
+        const breadcrumbItems = breadcrumbContainer.find('a');
+        if (breadcrumbItems.length >= 2) {
+          category = $(breadcrumbItems[breadcrumbItems.length - 2]).text().trim();
+        }
+        break;
+      }
+    }
     
     // Price selectors - updated for latest Flipkart structure
     const priceSelectors = [
@@ -97,7 +176,8 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       '._30jeq3._16Jk6d',   // Alternative price selector
       '.CEmiEU',            // New price selector
       '[class*="selling-price"]', // Generic price class
-      '.a-price-whole'      // Alternative price format
+      '.a-price-whole',     // Alternative price format
+      '._2tDhp2'            // Flipkart grocery price
     ];
     
     // Original price selectors - updated for latest Flipkart structure
@@ -105,7 +185,8 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       '._3I9_wc',           // Current MRP selector
       '._3I9_wc._2p6lqe',   // Alternative MRP selector
       '.yRaY8j',            // New MRP selector
-      '._2p6lqe'            // Another MRP variant
+      '._2p6lqe',           // Another MRP variant
+      '._27UcVY'            // Flipkart grocery MRP
     ];
 
     // Try each price selector
@@ -135,7 +216,8 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       '._396cs4._2amPTt._3qGmMb',    // Alternative image selector
       '._3exPp9',                     // Another image variant
       'img[class*="product-image"]',  // Generic product image
-      'img._2amPTt'                   // Another common image class
+      'img._2amPTt',                  // Another common image class
+      '.CXW8mj img'                   // Flipkart grocery image
     ];
     
     // Try each image selector
@@ -176,7 +258,8 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       '.X3BRps ._2-N8zT',       // Detailed description
       '.MocXoX',                // Product specifications
       '._2418kt',               // Another description variant
-      '.RmoJUa'                 // Additional description class
+      '.RmoJUa',                // Additional description class
+      '._1AN87F'                // Flipkart grocery description
     ];
     
     const descriptionParts: string[] = [];
@@ -204,7 +287,43 @@ function parseProductData(html: string, store: ProductData['store'], url: string
       }
     }
   } else if (store === 'amazon') {
-    title = $('#productTitle').text().trim();
+    // More robust title extraction for Amazon
+    const titleSelectors = [
+      '#productTitle',
+      '#title',
+      '.product-title',
+      '.a-size-large.product-title-word-break',
+      'h1.a-size-large',
+      'meta[property="og:title"]',
+      'meta[name="title"]'
+    ];
+    
+    // Try each title selector
+    for (const selector of titleSelectors) {
+      if (selector.startsWith('meta')) {
+        // Handle meta tags differently
+        const metaContent = $(selector).attr('content');
+        if (metaContent && metaContent.trim()) {
+          title = metaContent.trim();
+          break;
+        }
+      } else {
+        const titleText = $(selector).first().text().trim();
+        if (titleText) {
+          title = titleText;
+          break;
+        }
+      }
+    }
+    
+    // If still no title, try to extract from page title
+    if (!title) {
+      const pageTitle = $('title').text().trim();
+      if (pageTitle) {
+        // Remove common Amazon suffixes from page title
+        title = pageTitle.replace(/: Amazon.in.*$/, '').trim();
+      }
+    }
     
     const priceElement = $('.a-price .a-offscreen').first();
     const priceText = priceElement.text().trim();
@@ -216,6 +335,40 @@ function parseProductData(html: string, store: ProductData['store'], url: string
     
     image = $('#landingImage').attr('src') || '';
     description = $('#feature-bullets').text().trim();
+    
+    // Extract category from Amazon breadcrumb
+    const breadcrumbSelectors = [
+      '#wayfinding-breadcrumbs_feature_div',  // Common breadcrumb container
+      '.a-breadcrumb',                       // Alternative breadcrumb
+      '#nav-subnav',                         // Department navigation
+      '[class*="breadcrumb"]'               // Generic breadcrumb class
+    ];
+    
+    for (const selector of breadcrumbSelectors) {
+      const breadcrumbContainer = $(selector);
+      if (breadcrumbContainer.length) {
+        // Get the second breadcrumb item (usually the category)
+        const breadcrumbItems = breadcrumbContainer.find('a');
+        if (breadcrumbItems.length >= 2) {
+          category = $(breadcrumbItems[1]).text().trim();
+        }
+        break;
+      }
+    }
+    
+    // If breadcrumb not found, try to get from product details
+    if (!category) {
+      $('#detailBullets_feature_div .a-list-item').each((_, el) => {
+        const text = $(el).text().trim();
+        if (text.includes('Best Sellers Rank') || text.includes('Category')) {
+          const match = text.match(/in\s+([^(\n]+)/i);
+          if (match && match[1]) {
+            category = match[1].trim();
+            return false; // break
+          }
+        }
+      });
+    }
   } else if (store === 'myntra') {
     title = $('.pdp-name').text().trim();
     
@@ -270,10 +423,33 @@ function parseProductData(html: string, store: ProductData['store'], url: string
     }
   }
   
-  // Basic validation - we need at least a title
-  // But even if price is missing, we'll return what we have
+  // Fallback for title if still not found
   if (!title) {
-    throw new Error('Could not extract product title');
+    // Try to get title from URL
+    try {
+      const urlObj = new URL(url);
+      const pathSegments = urlObj.pathname.split('/');
+      // Get the last non-empty segment
+      for (let i = pathSegments.length - 1; i >= 0; i--) {
+        if (pathSegments[i]) {
+          // Convert slug to readable title
+          title = pathSegments[i]
+            .replace(/-|_/g, ' ')
+            .replace(/\.(html|htm|php|aspx)$/i, '')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+          break;
+        }
+      }
+    } catch (e) {
+      console.error('Error extracting title from URL:', e);
+    }
+  }
+  
+  // If still no title, use a generic one
+  if (!title) {
+    title = `Product from ${store.charAt(0).toUpperCase() + store.slice(1)}`;
   }
   
   return {
@@ -284,7 +460,8 @@ function parseProductData(html: string, store: ProductData['store'], url: string
     discountPercentage,
     image,
     store,
-    link: url
+    link: url,
+    category
   };
 }
 

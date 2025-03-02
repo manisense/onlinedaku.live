@@ -6,7 +6,8 @@ export interface IDeal extends Document {
   price: number;
   originalPrice: number;
   store: string;
-  category: string;
+  category: mongoose.Types.ObjectId | string; // Updated to support both ObjectId and string
+  tags?: string[];
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   image?: string;
@@ -16,7 +17,7 @@ export interface IDeal extends Document {
   endDate: Date;
   isActive: boolean;
   createdBy: mongoose.Types.ObjectId;
-  updatedBy: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId; // Made optional with ?
   createdAt: Date;
   updatedAt: Date;
 }
@@ -32,7 +33,7 @@ const DealSchema = new Schema<IDeal>(
     description: {
       type: String,
       trim: true,
-     
+      required: [true, 'Description is required'], // Added required validation
     },
     price: {
       type: Number,
@@ -48,10 +49,14 @@ const DealSchema = new Schema<IDeal>(
       trim: true,
     },
     category: {
-      type: String,
-      default: 'other',
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [true, 'Category is required'],
     },
+    tags: [{
+      type: String,
+      trim: true,
+    }],
     discountType: {
       type: String,
       enum: ['percentage', 'fixed'],
@@ -143,6 +148,7 @@ DealSchema.index({ title: 'text', description: 'text' });
 DealSchema.index({ store: 1 });
 DealSchema.index({ isActive: 1 });
 DealSchema.index({ endDate: 1 });
+DealSchema.index({ category: 1 }); // Added index for category lookups
 
 const Deal = mongoose.models.Deal || mongoose.model<IDeal>('Deal', DealSchema);
 

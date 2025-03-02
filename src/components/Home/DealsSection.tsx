@@ -13,6 +13,11 @@ interface Coupon {
   store: string;
   discount: number;
   link: string;
+  category?: {
+    _id: string;
+    name: string;
+    slug: string;
+  } | string; // Can be populated object or just the ID string
 }
 
 const DealsCard: React.FC<Coupon> = ({ title, image, store, discount, link }) => {

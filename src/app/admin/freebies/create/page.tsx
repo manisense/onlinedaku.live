@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaSave } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -19,26 +19,26 @@ interface FreebieFormData {
   isActive: boolean;
 }
 
-const categories = [
-  'Software',
-  'Entertainment',
-  'Education',
-  'Gaming',
-  'Books',
-  'Subscription',
-  'Other'
-];
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+}
 
 export default function CreateFreebie() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   
   const [formData, setFormData] = useState<FreebieFormData>({
     title: '',
     description: '',
     store: '',
-    category: categories[0],
+    category: '',
     image: '',
     link: '',
     termsAndConditions: '',
@@ -46,6 +46,34 @@ export default function CreateFreebie() {
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     isActive: true
   });
+  
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch('/api/admin/categories', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        toast.error('Failed to load categories');
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,13 +155,16 @@ export default function CreateFreebie() {
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                disabled={loadingCategories}
               >
+                <option value="">Select a category</option>
                 {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                  <option key={category._id} value={category._id}>
+                    {category.name}
                   </option>
                 ))}
               </select>
+              {loadingCategories && <p className="text-sm text-gray-500 mt-1">Loading categories...</p>}
             </div>
 
             <div>

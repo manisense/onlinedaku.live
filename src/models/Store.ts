@@ -43,7 +43,7 @@ const storeSchema = new Schema<IStore>(
       default: true,
     },
     categories: [{
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
     }],
   },

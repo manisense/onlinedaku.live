@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSearch } from 'react-icons/fa';
 
 interface DealFiltersProps {
@@ -14,7 +14,13 @@ interface FilterState {
   store: string;
 }
 
-const CATEGORIES = ['All', 'Electronics', 'Fashion', 'Food', 'Travel', 'Other'];
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
+}
 
 export default function DealFilters({ onFilterChange }: DealFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
@@ -23,6 +29,36 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
     status: 'All',
     store: '',
   });
+  
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch('/api/admin/categories', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     const newFilters = { ...filters, [key]: value };
@@ -57,13 +93,16 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
             value={filters.category}
             onChange={(e) => handleFilterChange('category', e.target.value)}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            disabled={loadingCategories}
           >
-            {CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            <option value="All">All</option>
+            {categories.map((category) => (
+              <option key={category._id} value={category._id}>
+                {category.name}
               </option>
             ))}
           </select>
+          {loadingCategories && <p className="text-sm text-gray-500 mt-1">Loading categories...</p>}
         </div>
 
         <div>
@@ -96,4 +135,4 @@ export default function DealFilters({ onFilterChange }: DealFiltersProps) {
       </div>
     </div>
   );
-} 
+}

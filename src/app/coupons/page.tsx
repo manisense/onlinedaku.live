@@ -15,18 +15,22 @@ interface Coupon {
   website: string;
   discount: string;
   expiryDate: string;
-  category: string;
+  category: {
+    _id: string;
+    name: string;
+    slug: string;
+  } | string; // Can be populated object or just the ID string
   terms: string;
   type: 'couponcode' | 'offer';
 }
-
-const categories = ['All', 'Fashion', 'Electronics', 'Books', 'Home & Living', 'Food', 'Travel'];
 
 export default function CouponsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [categories, setCategories] = useState<{_id: string; name: string; slug: string}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,6 +38,28 @@ export default function CouponsPage() {
   useEffect(() => {
     fetchCoupons();
   }, [selectedCategory, page]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await fetch('/api/categories?activeOnly=true');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        
+        const data = await response.json();
+        if (data.success && data.categories) {
+          // Add 'All' option at the beginning
+          setCategories([{ _id: 'All', name: 'All Categories', slug: 'all' }, ...data.categories]);
+        }
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    
+    fetchCategories();
+  }, []);
 
   const fetchCoupons = async () => {
     try {
@@ -65,20 +91,26 @@ export default function CouponsPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-2 mb-8">
-            {categories.map(category => (
-              <button
-                key={category}
-                onClick={() => {
-                  setSelectedCategory(category);
-                  setPage(1);
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-medium ${selectedCategory === category
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-              >
-                {category}
-              </button>
-            ))}
+            {loadingCategories ? (
+              <div className="w-full flex justify-center py-2">
+                <Loader size="small" text="Loading categories..." />
+              </div>
+            ) : (
+              categories.map(category => (
+                <button
+                  key={category._id}
+                  onClick={() => {
+                    setSelectedCategory(category._id);
+                    setPage(1);
+                  }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium ${selectedCategory === category._id
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                >
+                  {category.name}
+                </button>
+              ))
+            )}
           </div>
 
           {/* Error State */}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSpinner, FaTimes, FaLink, FaShoppingCart } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import ExternalImage from '@/components/ui/ExternalImage';
@@ -9,6 +9,14 @@ interface LinkDealModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (dealData: DealData) => Promise<void>;
+}
+
+interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  isActive: boolean;
 }
 
 interface ProductData {
@@ -26,6 +34,7 @@ interface DealData {
   title: string;
   description: string;
   price: number;
+  category: string;
   originalPrice: number;
   store: string;
   discountType: 'percentage' | 'fixed';
@@ -46,8 +55,41 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
     isActive: true,
     startDate: new Date(),
     endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default 1 month
+    category: '',
   });
   const [error, setError] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (!isOpen) return;
+      
+      try {
+        setLoadingCategories(true);
+        const token = localStorage.getItem('adminToken');
+        const response = await fetch('/api/admin/categories', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+
+        const data = await response.json();
+        setCategories(data.categories || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        toast.error('Failed to load categories');
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -106,6 +148,23 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
 
       setProductData(data.productData);
       
+      // Try to determine a suitable category based on product title or description
+      let suggestedCategory = '';
+      if (categories.length > 0) {
+        // Simple keyword matching for category suggestion
+        const productTitle = data.productData.title.toLowerCase();
+        const productDesc = (data.productData.description || '').toLowerCase();
+        
+        // Check for common category keywords in title and description
+        for (const category of categories) {
+          const categoryName = category.name.toLowerCase();
+          if (productTitle.includes(categoryName) || productDesc.includes(categoryName)) {
+            suggestedCategory = category._id;
+            break;
+          }
+        }
+      }
+      
       // Pre-fill deal data
       setDealData({
         ...dealData,
@@ -118,6 +177,7 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
         discountValue: data.productData.discountPercentage,
         image: data.productData.image,
         link: data.productData.link,
+        category: suggestedCategory || dealData.category,
       });
 
       toast.success('Product details fetched successfully');
@@ -173,6 +233,7 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
       isActive: true,
       startDate: new Date(),
       endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      category: '',
     });
     setError('');
   };
@@ -296,6 +357,31 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
                     className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
                     required
                   />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={dealData.category || ''}
+                    onChange={(e) => setDealData({ ...dealData, category: e.target.value })}
+                    className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
+                    required
+                    disabled={loadingCategories}
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                  {loadingCategories && (
+                    <div className="mt-1 text-xs text-gray-500 flex items-center">
+                      <FaSpinner className="animate-spin mr-1" /> Loading categories...
+                    </div>
+                  )}
                 </div>
                 
                 <div>

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed:admin": "node src/scripts/seedAdminData.js"
+    "seed:admin": "node src/scripts/seedAdminData.js",
+    "seed:categories": "ts-node --project tsconfig.seed.json src/scripts/seedCategories.ts",
+    "seed:categories:cjs": "node src/scripts/seedCategoriesCJS.js"
   },
   "dependencies": {
     "@tailwindcss/forms": "^0.5.10",

@@ -545,7 +545,7 @@ export default function DealsAndCoupons() {
         onSubmit={async (dealData) => {
           await handleAddDeal({ 
             ...dealData, 
-            category: 'other',
+            category: dealData.category,
             description: dealData.description || '',
             image: dealData.image || '',
             discountType: dealData.discountType as 'percentage' | 'fixed',

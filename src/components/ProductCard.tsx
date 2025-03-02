@@ -12,6 +12,11 @@ interface ProductCardProps {
     image: string;
     link: string;
     id?: string;
+    category?: {
+      _id: string;
+      name: string;
+      slug: string;
+    };
   };
 }
 
@@ -58,6 +63,20 @@ export default function ProductCard({ product }: ProductCardProps) {
               {truncateText(product.description, 150)}
             </p>
             <div className="mt-auto">
+              {product.category && (
+                <div 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = `/deals?category=${product?.category?.slug}`;
+                  }}
+                  className="inline-block mb-2 cursor-pointer"
+                >
+                  <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full hover:bg-gray-200">
+                    {product.category.name}
+                  </span>
+                </div>
+              )}
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xl font-bold">₹{product.price}</span>
                 <span className="text-gray-500 line-through text-sm">₹{product.originalPrice}</span>
