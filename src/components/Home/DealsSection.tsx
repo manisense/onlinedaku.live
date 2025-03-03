@@ -6,27 +6,27 @@ import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa';
 import Loader from '../ui/Loader';
 
-interface Coupon {
+interface Deal {
   _id: string;
   title: string;
   image: string;
   store: string;
   discount: number;
   link: string;
+  createdAt: string;
   category?: {
     _id: string;
     name: string;
     slug: string;
-  } | string; // Can be populated object or just the ID string
+  } | string;
 }
 
-const DealsCard: React.FC<Coupon> = ({ title, image, store, discount, link }) => {
-  // Ensure image and link have fallback values
+const DealsCard: React.FC<Deal> = ({ title, image, store, discount, _id }) => {
   const imageSrc = image || '/product-placeholder.png';
-  const linkHref = link || '#';
+  const link = _id || '#';
   
   return (
-    <Link href={linkHref}>
+    <Link href={`/deals/${link}`}>
       <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
         <div className="relative h-28">
           <Image
@@ -57,32 +57,32 @@ const DealsCard: React.FC<Coupon> = ({ title, image, store, discount, link }) =>
 };
 
 const DealsSection: React.FC = () => {
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCoupons = async () => {
+    const fetchDeals = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/coupons?limit=8');
+        const response = await fetch('/api/deals?limit=8&sort=createdAt:desc');
         if (!response.ok) {
-          throw new Error('Failed to fetch coupons');
+          throw new Error('Failed to fetch deals');
         }
         const data = await response.json();
-        setCoupons(data.coupons || []);
+        setDeals(data.deals || []);
       } catch (err) {
-        console.error('Error fetching coupons:', err);
-       // setError('Failed to load coupons');
+        console.error('Error fetching deals:', err);
         // Fallback to sample data if API fails
-        setCoupons([
+        setDeals([
           {
             _id: '1',
             title: 'Amazon Fashion Sale',
             image: '/images/products/amazon-fashion.jpg',
             store: 'Amazon',
             discount: 40,
-            link: '/coupons/1'
+            link: '/deals/1',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '2',
@@ -90,7 +90,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/flipkart-electronics.jpg',
             store: 'Flipkart',
             discount: 25,
-            link: '/coupons/2'
+            link: '/deals/2',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '3',
@@ -98,7 +99,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/myntra-clothing.jpg',
             store: 'Myntra',
             discount: 30,
-            link: '/coupons/3'
+            link: '/deals/3',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '4',
@@ -106,7 +108,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/ajio-fashion.jpg',
             store: 'Ajio',
             discount: 35,
-            link: '/coupons/4'
+            link: '/deals/4',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '5',
@@ -114,7 +117,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/tata-cliq.jpg',
             store: 'Tata CLiQ',
             discount: 20,
-            link: '/coupons/5'
+            link: '/deals/5',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '6',
@@ -122,7 +126,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/nykaa-beauty.jpg',
             store: 'Nykaa',
             discount: 15,
-            link: '/coupons/6'
+            link: '/deals/6',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '7',
@@ -130,7 +135,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/swiggy-food.jpg',
             store: 'Swiggy',
             discount: 50,
-            link: '/coupons/7'
+            link: '/deals/7',
+            createdAt: new Date().toISOString()
           },
           {
             _id: '8',
@@ -138,7 +144,8 @@ const DealsSection: React.FC = () => {
             image: '/images/products/zomato-dining.jpg',
             store: 'Zomato',
             discount: 45,
-            link: '/coupons/8'
+            link: '/deals/8',
+            createdAt: new Date().toISOString()
           }
         ]);
       } finally {
@@ -146,7 +153,7 @@ const DealsSection: React.FC = () => {
       }
     };
 
-    fetchCoupons();
+    fetchDeals();
   }, []);
 
   return (
@@ -161,21 +168,16 @@ const DealsSection: React.FC = () => {
         
         {loading ? (
           <div className="w-full flex justify-center items-center py-8">
-            <Loader size="large" text="Loading coupons..." />
+            <Loader size="large" text="Loading deals..." />
           </div>
         ) : error ? (
           <div className="w-full text-center py-8 text-red-600">{error}</div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {coupons.slice(0, 8).map((coupon) => (
+            {deals.map((deal) => (
               <DealsCard
-                key={coupon._id}
-                _id={coupon._id}
-                title={coupon.title}
-                image={coupon.image}
-                store={coupon.store}
-                discount={coupon.discount}
-                link={coupon.link}
+                key={deal._id}
+                {...deal}
               />
             ))}
           </div>
