@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { useLoading } from '@/context/LoadingContext';
 import Loader from '@/components/ui/Loader';
@@ -27,7 +27,8 @@ interface Deal {
   couponCode?: string;
 }
 
-export default function DealsPage() {
+// Create a separate component that uses useSearchParams
+function DealsContent() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -98,7 +99,7 @@ export default function DealsPage() {
   }, [searchParams, showLoader, hideLoader]); // Update when search params change
 
   return (
-    <MainLayout>
+    <>
       <SearchBar />
       <div className="min-h-screen bg-gray-50 py-3">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
@@ -148,6 +149,21 @@ export default function DealsPage() {
           </div>
         </div>
       </div>
+    </>
+  );
+}
+
+// Main exported component with Suspense boundary
+export default function DealsPage() {
+  return (
+    <MainLayout>
+      <Suspense fallback={
+        <div className="min-h-screen flex justify-center items-center">
+          <Loader size="large" text="Loading deals..." />
+        </div>
+      }>
+        <DealsContent />
+      </Suspense>
     </MainLayout>
   );
 }

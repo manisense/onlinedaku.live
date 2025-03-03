@@ -89,11 +89,16 @@ export default function DealDetailPage() {
         setLoading(true);
         const response = await fetch(`/api/deals/${dealId}`);
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch deal details');
+        const data = await response.json();
+        
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Failed to fetch deal details');
         }
         
-        const data = await response.json();
+        if (!data.deal) {
+          throw new Error('Deal not found');
+        }
+        
         setDeal(data.deal);
         
         // Fetch random recommended deals
@@ -107,8 +112,8 @@ export default function DealDetailPage() {
           console.error('Failed to fetch recommended deals:', recErr);
         }
       } catch (err) {
-        setError('Failed to load deal details. Please try again later.');
-        console.error(err);
+        console.error('Error fetching deal:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load deal details. Please try again later.');
       } finally {
         setLoading(false);
       }

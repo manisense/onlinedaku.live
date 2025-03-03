@@ -122,7 +122,7 @@ export default function CategoryFilter({ className = '' }: CategoryFilterProps) 
   }
 
   return (
-    <div className={`${className} p-4 bg-white rounded-lg shadow-md`}>
+    <div className={`${className} p-4 bg-white text-gray-800 rounded-lg shadow-md`}>
       <h3 className="text-lg font-semibold mb-3">Categories</h3>
       
       <div className="space-y-2">
