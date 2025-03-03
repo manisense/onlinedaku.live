@@ -105,6 +105,7 @@ const BannerCarousel: React.FC = () => {
                           onError={(e) => {
                             e.currentTarget.src = '/banner-placeholder.png';
                           }}
+                          unoptimized
                         />
                       </div>
                     </Link>

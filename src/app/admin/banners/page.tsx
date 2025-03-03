@@ -296,6 +296,10 @@ export default function BannersPage() {
                             fill
                             className="object-cover rounded-md"
                             sizes="160px"
+                            onError={(e) => {
+                              e.currentTarget.src = '/images/placeholder.png';
+                            }}
+                            unoptimized
                           />
                         </div>
                       </td>
