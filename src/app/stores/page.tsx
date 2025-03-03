@@ -52,13 +52,13 @@ export default function StoresPage() {
 
   }, []);
 
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('featured');
+  // const [selectedCategory, setSelectedCategory] = useState('All');
+  // const [sortBy, setSortBy] = useState('featured');
 
 
-  const filteredStores = stores.filter(store =>
-    selectedCategory === 'All' ? true : store.category === selectedCategory
-  );
+  // const filteredStores = stores.filter(store =>
+  //   selectedCategory === 'All' ? true : store.category === selectedCategory
+  // );
 
   return (
     <MainLayout>
@@ -101,7 +101,7 @@ export default function StoresPage() {
                           </div>
           ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredStores.map(store => (
+          {stores.map(store => (
             <div key={store._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <div className="relative h-40 bg-gray-100 p-6 flex items-center justify-center">
                 <Image
