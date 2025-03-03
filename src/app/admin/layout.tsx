@@ -15,6 +15,7 @@ import {
   FaGift,
   FaStore
 } from 'react-icons/fa';
+import { GiTatteredBanner } from "react-icons/gi";
 import { RiCoupon2Fill } from "react-icons/ri";
 import toast from 'react-hot-toast';
 import { confirmLogout } from '@/utils/confirmDialog';
@@ -39,6 +40,7 @@ export default function AdminLayout({
     { name: 'Stores', href: '/admin/stores', icon: FaStore },
     { name: 'Blogs', href: '/admin/blogs', icon: FaBlog },
     { name: 'Users', href: '/admin/users', icon: FaUsers },
+    { name: 'Banners', href: '/admin/banners', icon: GiTatteredBanner },
     { name: 'Settings', href: '/admin/settings', icon: FaCog },
   ];
 
