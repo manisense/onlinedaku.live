@@ -16,9 +16,9 @@ interface Store {
   createdAt?: string;
 }
 
-const StoreCard: React.FC<Store> = ({ name, logo, website, description }) => {
+const StoreCard: React.FC<Store> = ({ name, logo,  description }) => {
   return (
-    <Link href={website} target="_blank" rel="noopener noreferrer">
+    <Link href={`/stores/${name}`}>
       <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
         <div className="relative h-28">
           <Image

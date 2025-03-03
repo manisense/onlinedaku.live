@@ -20,7 +20,7 @@ interface Store {
   featured?: boolean;
 }
 
-const categories = ['All', 'Multi-Category', 'Electronics', 'Fashion', 'Home & Garden', 'Travel', 'Gaming'];
+//const categories = ['All', 'Multi-Category', 'Electronics', 'Fashion', 'Home & Garden', 'Travel', 'Gaming'];
 
 export default function StoresPage() {
   const [stores, setStores] = useState<Store[]>([]);
@@ -69,7 +69,7 @@ export default function StoresPage() {
 
 
        
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
+        {/* <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
           <div className="flex flex-wrap gap-2">
             {categories.map(category => (
               <button
@@ -92,7 +92,7 @@ export default function StoresPage() {
             <option value="deals">Most Deals</option>
             <option value="rating">Highest Rated</option>
           </select>
-        </div>
+        </div> */}
 
         {/* Stores Grid */}
         {isLoading ? (
@@ -136,7 +136,7 @@ export default function StoresPage() {
                 </div>
                 <div className="flex space-x-3">
                   <a
-                    href={`/stores/${store._id}`}
+                    href={`/stores/${store.name.toLowerCase().replace(/\s+/g, '-')}`}
                     className="flex-1 text-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-300"
                   >
                     View Deals

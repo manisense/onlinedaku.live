@@ -8,6 +8,15 @@ export interface IStore extends Document {
   website: string;
   isActive: boolean;
   categories: string[];
+  rating: number;
+  totalReviews: number;
+  address?: string;
+  socialLinks?: {
+    facebook?: string;
+    twitter?: string;
+    instagram?: string;
+  };
+  featuredImage?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -46,6 +55,28 @@ const storeSchema = new Schema<IStore>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
     }],
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+    totalReviews: {
+      type: Number,
+      default: 0
+    },
+    address: {
+      type: String,
+      trim: true
+    },
+    socialLinks: {
+      facebook: String,
+      twitter: String,
+      instagram: String
+    },
+    featuredImage: {
+      type: String
+    }
   },
   {
     timestamps: true,
