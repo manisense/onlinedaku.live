@@ -45,6 +45,18 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'assets.myntassets.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.ajio.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.nykaa.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.nykaa.com',
       }
     ],
     // More permissive format to ensure any external image can be loaded during development

@@ -171,6 +171,9 @@ export default function EditStorePage() {
                   width={100}
                   height={100}
                   className="object-contain"
+                  onError={(e) => {
+                    e.currentTarget.src = '/product-placeholder.png';
+                  }}
                 />
               </div>
             )}
