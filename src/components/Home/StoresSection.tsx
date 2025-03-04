@@ -17,8 +17,9 @@ interface Store {
 }
 
 const StoreCard: React.FC<Store> = ({ name, logo,  description }) => {
+  const storeSlug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   return (
-    <Link href={`/stores/${name}`}>
+    <Link href={`/stores/${storeSlug}`}>
       <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
         <div className="relative h-28">
           <Image
