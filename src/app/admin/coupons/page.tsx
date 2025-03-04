@@ -65,7 +65,7 @@ export default function CouponsPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Coupons</h1>
+        <h1 className="text-2xl text-indigo-800 font-bold">Coupons</h1>
         <Link
           href="/admin/coupons/create"
           className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors"
@@ -78,7 +78,7 @@ export default function CouponsPage() {
       {loading ? (
          <Loader size='large'  text='Loading...' />
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white text-gray-800 rounded-lg shadow overflow-hidden">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>

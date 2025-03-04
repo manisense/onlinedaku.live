@@ -1,48 +1,68 @@
 "use client"
 
-import MainLayout from '@/components/Layout/MainLayout';
-import SearchBar from '@/components/Search/SearchBar';
-import Loader from '@/components/ui/Loader';
 import { useState, useEffect } from 'react';
-import { FaCopy, FaCheck } from 'react-icons/fa';
+import MainLayout from '@/components/Layout/MainLayout';
+import CouponCard from '@/components/CouponCard';
+import Loader from '@/components/ui/Loader';
+import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 
 interface Coupon {
   _id: string;
-  code: string;
+  offerId: string;
   title: string;
   description: string;
+  code: string;
+  featured: boolean;
+  source: string;
+  url: string;
+  affiliateLink: string;
+  imageUrl: string;
+  brandLogo: string;
+  type: string;
   store: string;
-  website: string;
-  discount: string;
-  expiryDate: string;
-  category: {
-    _id: string;
-    name: string;
-    slug: string;
-  } | string; // Can be populated object or just the ID string
-  terms: string;
-  type: 'couponcode' | 'offer';
+  startDate: string;
+  endDate: string;
+  status: string;
+  rating: number;
+  label: string;
+  isActive: boolean;
+  storeSlug: string;
+  createdAt: string;
+  updatedAt: string;
+  terms?: string;
+}
+
+// Define interface for store items
+interface StoreItem {
+  _id: string;
+  name: string;
+  slug: string;
 }
 
 export default function CouponsPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [categories, setCategories] = useState<{_id: string; name: string; slug: string}[]>([]);
+  const [stores, setStores] = useState<StoreItem[]>([]);
+  const [selectedStore, setSelectedStore] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true); // Renamed from loadingCategories
+  const [isLoadingStores, setIsLoadingStores] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   useEffect(() => {
     fetchCoupons();
-  }, [selectedCategory, page]);
+    fetchStores();
+  }, [selectedCategory, selectedStore, page]);
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        setLoadingCategories(true);
+        setIsLoadingCategories(true);
         const response = await fetch('/api/categories?activeOnly=true');
         if (!response.ok) throw new Error('Failed to fetch categories');
         
@@ -54,24 +74,57 @@ export default function CouponsPage() {
       } catch (err) {
         console.error('Error fetching categories:', err);
       } finally {
-        setLoadingCategories(false);
+        setIsLoadingCategories(false);
       }
     };
     
     fetchCategories();
   }, []);
 
+  const fetchStores = async () => {
+    try {
+      setIsLoadingStores(true);
+      const response = await fetch('/api/stores');
+      if (!response.ok) throw new Error('Failed to fetch stores');
+      
+      const data = await response.json();
+      if (data.success && data.data) {
+        // Map API response to StoreItem array
+        const storeItems: StoreItem[] = data.data.map((store: StoreItem) => ({
+          _id: store._id,
+          name: store.name,
+          slug: store.slug
+        }));
+        // Add 'All' option
+        setStores([{ _id: 'All', name: 'All Stores', slug: 'all' }, ...storeItems]);
+      }
+    } catch (err) {
+      console.error('Error fetching stores:', err);
+    } finally {
+      setIsLoadingStores(false);
+    }
+  };
+
   const fetchCoupons = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `/api/coupons?page=${page}&category=${selectedCategory}&limit=12`
-      );
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '12'
+      });
+      
+      if (selectedCategory !== 'All') params.append('category', selectedCategory);
+      if (selectedStore !== 'All') params.append('store', selectedStore);
+      if (searchTerm) params.append('search', searchTerm);
+      
+      const response = await fetch(`/api/coupons?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch coupons');
       
       const data = await response.json();
-      setCoupons(data.coupons);
-      setTotalPages(data.pagination.totalPages);
+      setCoupons(data.coupons || []);
+      setTotalPages(data.pagination?.totalPages || 1);
     } catch (err) {
       setError('Failed to load coupons. Please try again later.');
     } finally {
@@ -79,112 +132,165 @@ export default function CouponsPage() {
     }
   };
 
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1); // Reset to first page on search
+    fetchCoupons();
+  };
+
+  const clearFilters = () => {
+    setSelectedCategory('All');
+    setSelectedStore('All');
+    setSearchTerm('');
+    setPage(1);
+    fetchCoupons();
   };
 
   return (
     <MainLayout>
-      <SearchBar />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap gap-2 mb-8">
-            {loadingCategories ? (
-              <div className="w-full flex justify-center py-2">
-                <Loader size="small" text="Loading categories..." />
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Latest Coupons & Deals</h1>
+            <p className="text-gray-600 mb-6">Find the best coupons and deals from your favorite stores.</p>
+            
+            {/* Search and Filter Controls */}
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              <form onSubmit={handleSearch} className="flex-grow">
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search for deals..." 
+                    className="w-full px-4 py-2 pl-10 pr-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaSearch className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    <span className="sr-only">Search</span>
+                    <FaSearch className="h-4 w-4 text-indigo-600" />
+                  </button>
+                </div>
+              </form>
+              
+              <button 
+                type="button"
+                onClick={() => setFilterOpen(!filterOpen)}
+                className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 md:w-auto"
+              >
+                <FaFilter className="h-4 w-4 mr-2" />
+                Filters
+              </button>
+            </div>
+            
+            {/* Expanded Filter Options */}
+            {filterOpen && (
+              <div className="bg-white p-4 rounded-md shadow-sm mb-6 border border-gray-200">
+                <div className="flex justify-between mb-3">
+                  <h3 className="font-medium text-gray-900">Filters</h3>
+                  <button onClick={() => setFilterOpen(false)} className="text-gray-400 hover:text-gray-500">
+                    <FaTimes className="h-4 w-4" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Categories Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Categories</label>
+                    {isLoadingCategories ? (
+                      <div className="py-2 px-3 bg-gray-100 animate-pulse rounded-md h-10"></div>
+                    ) : (
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => { 
+                          setSelectedCategory(e.target.value);
+                          setPage(1);
+                        }}
+                        className="block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      >
+                        {categories.map(category => (
+                          <option key={category._id} value={category._id}>{category.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  
+                  {/* Stores Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Stores</label>
+                    {isLoadingStores ? (
+                      <div className="py-2 px-3 bg-gray-100 animate-pulse rounded-md h-10"></div>
+                    ) : (
+                      <select
+                        value={selectedStore}
+                        onChange={(e) => { 
+                          setSelectedStore(e.target.value);
+                          setPage(1); 
+                        }}
+                        className="block w-full px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                      >
+                        {stores.map(store => (
+                          <option key={store._id} value={store._id}>{store.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex justify-end mt-4">
+                  <button 
+                    onClick={clearFilters}
+                    className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-500"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
               </div>
-            ) : (
-              categories.map(category => (
-                <button
-                  key={category._id}
-                  onClick={() => {
-                    setSelectedCategory(category._id);
-                    setPage(1);
-                  }}
-                  className={`px-4 py-2 rounded-full text-sm font-medium ${selectedCategory === category._id
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'}`}
-                >
-                  {category.name}
-                </button>
-              ))
             )}
           </div>
 
           {/* Error State */}
           {error && (
-            <div className="text-center py-12">
+            <div className="text-center py-12 bg-red-50 rounded-md">
               <p className="text-red-600">{error}</p>
+              <button 
+                onClick={() => {
+                  setError('');
+                  fetchCoupons();
+                }}
+                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              >
+                Try Again
+              </button>
             </div>
           )}
 
           {/* Loading State */}
           {loading ? (
             <div className="text-center py-12">
-               <Loader size='large'  text='Loading...' />
-                          </div>
+              <Loader size="large" text="Loading coupons..." />
+            </div>
+          ) : coupons.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-lg shadow">
+              <p className="text-gray-600">No coupons found matching your criteria.</p>
+            </div>
           ) : (
             /* Coupons Grid */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {coupons.map(coupon => (
-                <div key={coupon._id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{coupon.title}</h3>
-                        <p className="text-sm text-gray-500">{coupon.store}</p>
-                      </div>
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        {coupon.discount} OFF
-                      </span>
-                    </div>
-                    <p className="text-gray-600 text-sm mb-4">{coupon.description}</p>
-                    {coupon.type === 'couponcode' && coupon.code && (
-                      <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between mb-4">
-                        <code className="text-sm font-mono font-medium">{coupon.code}</code>
-                        <button
-                          onClick={() => handleCopyCode(coupon.code)}
-                          className="flex items-center text-indigo-600 hover:text-indigo-500"
-                        >
-                          {copiedCode === coupon.code ? (
-                            <>
-                              <FaCheck className="w-4 h-4 mr-2" />
-                              <span>Copied!</span>
-                            </>
-                          ) : (
-                            <>
-                              <FaCopy className="w-4 h-4 mr-2" />
-                              <span>Copy Code</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                    )}
-                    {coupon.type === 'offer' && (
-                      <a
-                        href={coupon.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors mb-4"
-                      >
-                        Get Offer
-                      </a>
-                    )}
-                    <div className="text-sm text-gray-500">
-                      <p>Expires: {new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(coupon.expiryDate))}</p>
-                      <p className="mt-2 text-xs">{coupon.terms}</p>
-                    </div>
-                  </div>
-                </div>
+                <CouponCard key={coupon._id} coupon={coupon} />
               ))}
             </div>
           )}
 
           {/* Pagination */}
           {!loading && totalPages > 1 && (
-            <div className="flex justify-center space-x-2 mt-8">
+            <div className="flex justify-center items-center space-x-2 mt-8">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
@@ -192,9 +298,38 @@ export default function CouponsPage() {
               >
                 Previous
               </button>
-              <span className="px-4 py-2 text-gray-700">
-                Page {page} of {totalPages}
-              </span>
+              <div className="flex space-x-1">
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  const pageNumber = i + 1;
+                  // Show first page, last page, and pages around current page
+                  if (
+                    pageNumber === 1 || 
+                    pageNumber === totalPages || 
+                    (pageNumber >= page - 1 && pageNumber <= page + 1)
+                  ) {
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => setPage(pageNumber)}
+                        className={`w-8 h-8 flex items-center justify-center rounded-full ${
+                          page === pageNumber
+                            ? 'bg-indigo-600 text-white font-medium'
+                            : 'border hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  }
+                  if (
+                    (pageNumber === 2 && page > 3) || 
+                    (pageNumber === totalPages - 1 && page < totalPages - 2)
+                  ) {
+                    return <span key={pageNumber} className="px-1">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
               <button
                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}

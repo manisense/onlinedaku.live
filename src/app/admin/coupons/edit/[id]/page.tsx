@@ -1,163 +1,277 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Loader from '@/components/ui/Loader';
+import { toast } from 'react-hot-toast';
 
-interface Category {
+interface Store {
   _id: string;
   name: string;
-  slug?: string;
-  description?: string;
-  isActive?: boolean;
+  slug: string;
 }
 
 interface Coupon {
   _id: string;
   title: string;
   description: string;
-  type: 'couponcode' | 'offer';
   code: string;
+  type: string;
   store: string;
-  website: string;
-  expiryDate: string;
-  category: string;
-  terms: string;
-  discount: string;
+  storeId?: string;
+  storeName?: string;
+  storeSlug: string;
+  url: string;
+  affiliateLink: string;
+  imageUrl: string;
+  brandLogo: string;
+  featured: boolean;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+  label: string;
+  rating: number;
   isActive: boolean;
 }
 
 export default function EditCouponPage() {
-  const params = useParams() as { id: string };
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [formData, setFormData] = useState<Coupon>({
-    _id: '',
+  const params = useParams();
+  const { id } = params;
+
+  const [loading, setLoading] = useState(false);
+  const [loadingCoupon, setLoadingCoupon] = useState(true);
+  const [loadingStores, setLoadingStores] = useState(true);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  // Form fields state
+  const [formData, setFormData] = useState({
     title: '',
     description: '',
-    type: 'offer',
     code: '',
-    store: '',
-    website: '',
-    expiryDate: '',
-    category: '',
-    terms: '',
-    discount: '',
-    isActive: true
+    type: 'Code',
+    storeId: '',
+    storeName: '',
+    storeSlug: '',
+    url: '',
+    affiliateLink: '',
+    imageUrl: '',
+    brandLogo: '',
+    label: '',
+    featured: false,
+    status: 'active',
+    isActive: true,
+    startDate: '',
+    endDate: '',
+    rating: 5
   });
-  
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
 
+  // Form validation state
+  const [errors, setErrors] = useState({
+    title: '',
+    code: '',
+    label: '',
+    storeId: '',
+    startDate: '',
+    endDate: ''
+  });
+
+  // Fetch coupon data
   useEffect(() => {
-    const fetchCoupon = async () => {
+    async function fetchCouponData() {
       try {
-        setLoading(true);
-        const token = localStorage.getItem('adminToken');
-        const response = await fetch(`/api/admin/coupons/${params.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
+        setLoadingCoupon(true);
+        const res = await fetch(`/api/admin/coupons/${id}`);
+        
+        if (!res.ok) {
+          if (res.status === 404) {
+            toast.error('Coupon not found');
+            router.push('/admin/coupons');
+            return;
+          }
           throw new Error('Failed to fetch coupon');
         }
-
-        const data = await response.json();
         
-        // Format the date to YYYY-MM-DD for the date input
-        const expiryDate = new Date(data.coupon.expiryDate)
-          .toISOString()
-          .split('T')[0];
-
-        setFormData({
-          ...data.coupon,
-          expiryDate
-        });
-      } catch (err) {
-        console.error('Error fetching coupon:', err);
-        setError('Failed to load coupon details');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        const token = localStorage.getItem('adminToken');
-        const response = await fetch('/api/admin/categories', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        if (data.success) {
+          setCoupon(data.data);
+          
+          // Format dates for input fields
+          const startDate = data.data.startDate 
+            ? new Date(data.data.startDate).toISOString().split('T')[0]
+            : '';
+            
+          const endDate = data.data.endDate
+            ? new Date(data.data.endDate).toISOString().split('T')[0]
+            : '';
+            
+          // Set form data
+          setFormData({
+            title: data.data.title || '',
+            description: data.data.description || '',
+            code: data.data.code || '',
+            type: data.data.type || '',
+            storeId: data.data.storeId || '',
+            storeName: data.data.storeName || '',
+            storeSlug: data.data.storeSlug || '',
+            url: data.data.url || '',
+            affiliateLink: data.data.affiliateLink || '',
+            imageUrl: data.data.imageUrl || '',
+            brandLogo: data.data.brandLogo || '',
+            label: data.data.label || '',
+            featured: data.data.featured || false,
+            status: data.data.status || 'active',
+            isActive: data.data.isActive || true,
+            startDate,
+            endDate,
+            rating: data.data.rating || 5
+          });
         }
-
-        const data = await response.json();
-        setCategories(data.categories || []);
-      } catch (err) {
-        console.error('Error fetching categories:', err);
-        toast.error('Failed to load categories');
+      } catch (error) {
+        console.error('Error fetching coupon:', error);
+        toast.error('Failed to load coupon details');
       } finally {
-        setLoadingCategories(false);
+        setLoadingCoupon(false);
       }
-    };
-
-    if (params.id) {
-      fetchCoupon();
-      fetchCategories();
     }
-  }, [params.id]);
+
+    fetchCouponData();
+  }, [id]);
+
+  // Fetch stores data
+  useEffect(() => {
+    async function fetchStoresData() {
+      try {
+        setLoadingStores(true);
+        const res = await fetch('/api/admin/stores');
+        
+        if (!res.ok) {
+          throw new Error('Failed to fetch stores');
+        }
+        
+        const data = await res.json();
+        if (data.success) {
+          setStores(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching stores:', error);
+        toast.error('Failed to load stores');
+      } finally {
+        setLoadingStores(false);
+      }
+    }
+
+    fetchStoresData();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     // Clear error when user starts typing
-    if (error) setError('');
+    if (errors[name as keyof typeof errors]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+
+    // Validate form data
+    const newErrors = { ...errors };
+    let hasErrors = false;
+
+    if (!formData.title) {
+      newErrors.title = 'Title is required';
+      hasErrors = true;
+    }
+
+    if (!formData.code) {
+      newErrors.code = 'Code is required';
+      hasErrors = true;
+    }
+
+    if (!formData.label) {
+      newErrors.label = 'Label is required';
+      hasErrors = true;
+    }
+
+    if (!formData.storeId) {
+      newErrors.storeId = 'Store is required';
+      hasErrors = true;
+    }
+
+    if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
+      newErrors.startDate = 'Start date cannot be after end date';
+      newErrors.endDate = 'End date cannot be before start date';
+      hasErrors = true;
+    }
+
+    setErrors(newErrors);
+
+    if (hasErrors) {
+      return;
+    }
 
     try {
-      setSubmitting(true);
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch(`/api/admin/coupons/${params.id}`, {
+      setLoading(true);
+      const res = await fetch(`/api/admin/coupons/${id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        headers: {
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(formData)
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update coupon');
+      if (!res.ok) {
+        throw new Error('Failed to update coupon');
       }
 
-      toast.success('Coupon updated successfully');
-      router.push('/admin/coupons');
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Coupon updated successfully');
+        router.push('/admin/coupons');
+      } else {
+        throw new Error(data.message || 'Failed to update coupon');
+      }
     } catch (error) {
       console.error('Error updating coupon:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update coupon';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      toast.error('Failed to update coupon');
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
-  if (loading) {
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/coupons/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete coupon');
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        toast.success('Coupon deleted successfully');
+        router.push('/admin/coupons');
+      } else {
+        throw new Error(data.message || 'Failed to delete coupon');
+      }
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      toast.error('Failed to delete coupon');
+    } finally {
+      setLoading(false);
+      setDeleteModalOpen(false);
+    }
+  };
+
+  if (loadingCoupon || loadingStores) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <Loader size="large" text="Loading coupon details..." />
@@ -165,10 +279,10 @@ export default function EditCouponPage() {
     );
   }
 
-  if (error && !formData._id) {
+  if (!coupon) {
     return (
       <div className="p-6 text-center">
-        <div className="text-red-500 mb-4">{error}</div>
+        <div className="text-red-500 mb-4">Coupon not found</div>
         <button
           onClick={() => router.push('/admin/coupons')}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -191,12 +305,6 @@ export default function EditCouponPage() {
         </button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-md border border-red-300">
-          {error}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="max-w-2xl bg-white rounded-lg shadow p-6">
         <div className="grid grid-cols-1 gap-6">
           <div>
@@ -209,6 +317,7 @@ export default function EditCouponPage() {
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
           </div>
 
           <div>
@@ -224,6 +333,19 @@ export default function EditCouponPage() {
           </div>
 
           <div>
+            <label className="block text-sm font-medium text-gray-700">Code</label>
+            <input
+              type="text"
+              name="code"
+              value={formData.code}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+            {errors.code && <p className="text-red-500 text-sm mt-1">{errors.code}</p>}
+          </div>
+
+          <div>
             <label className="block text-sm font-medium text-gray-700">Type</label>
             <select
               name="type"
@@ -231,100 +353,143 @@ export default function EditCouponPage() {
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
-              <option value="couponcode">Coupon Code</option>
-              <option value="offer">Offer</option>
+              <option value="Code">Code</option>
+              <option value="Deal">Deal</option>
             </select>
           </div>
-
-          {formData.type === 'couponcode' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Coupon Code</label>
-              <input
-                type="text"
-                name="code"
-                value={formData.code}
-                onChange={handleChange}
-                required={formData.type === 'couponcode'}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              />
-            </div>
-          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700">Store</label>
-            <input
-              type="text"
-              name="store"
-              value={formData.store}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Website</label>
-            <input
-              type="url"
-              name="website"
-              value={formData.website}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Discount</label>
-            <input
-              type="text"
-              name="discount"
-              value={formData.discount}
-              onChange={handleChange}
-              required
-              placeholder="e.g., 20% OFF or $10 OFF"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
-            <input
-              type="date"
-              name="expiryDate"
-              value={formData.expiryDate}
-              onChange={handleChange}
-              required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Category</label>
             <select
-              name="category"
-              value={formData.category}
+              name="storeId"
+              value={formData.storeId}
               onChange={handleChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              disabled={loadingCategories}
             >
-              <option value="">Select a category</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
+              <option value="">Select a store</option>
+              {stores.map(store => (
+                <option key={store._id} value={store._id}>
+                  {store.name}
                 </option>
               ))}
             </select>
-            {loadingCategories && <p className="text-sm text-gray-500 mt-1">Loading categories...</p>}
+            {errors.storeId && <p className="text-red-500 text-sm mt-1">{errors.storeId}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Terms & Conditions</label>
-            <textarea
-              name="terms"
-              value={formData.terms}
+            <label className="block text-sm font-medium text-gray-700">URL</label>
+            <input
+              type="url"
+              name="url"
+              value={formData.url}
               onChange={handleChange}
-              rows={3}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Affiliate Link</label>
+            <input
+              type="url"
+              name="affiliateLink"
+              value={formData.affiliateLink}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Image URL</label>
+            <input
+              type="url"
+              name="imageUrl"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Brand Logo</label>
+            <input
+              type="url"
+              name="brandLogo"
+              value={formData.brandLogo}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Label</label>
+            <input
+              type="text"
+              name="label"
+              value={formData.label}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+            {errors.label && <p className="text-red-500 text-sm mt-1">{errors.label}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Featured</label>
+            <input
+              type="checkbox"
+              name="featured"
+              checked={formData.featured}
+              onChange={e => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+              className="mt-1 block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+            {errors.startDate && <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              value={formData.endDate}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            />
+            {errors.endDate && <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Rating</label>
+            <input
+              type="number"
+              name="rating"
+              value={formData.rating}
+              onChange={handleChange}
+              min={1}
+              max={5}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             />
           </div>
@@ -344,16 +509,46 @@ export default function EditCouponPage() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex justify-between">
           <button
             type="submit"
-            disabled={submitting}
-            className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            disabled={loading}
+            className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
           >
-            {submitting ? 'Updating...' : 'Update Coupon'}
+            {loading ? 'Updating...' : 'Update Coupon'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setDeleteModalOpen(true)}
+            className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+          >
+            Delete Coupon
           </button>
         </div>
       </form>
+
+      {deleteModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-xl font-bold mb-4">Delete Coupon</h2>
+            <p className="mb-4">Are you sure you want to delete this coupon? This action cannot be undone.</p>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setDeleteModalOpen(false)}
+                className="bg-gray-300 text-gray-700 py-2 px-4 rounded-md mr-2 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

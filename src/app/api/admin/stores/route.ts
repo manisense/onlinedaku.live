@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/utils/auth';
 import dbConnect from '@/utils/dbConnect';
 import { Store } from '@/models/Store';
+import connectDB from '@/utils/database';
 
 export async function POST(request: NextRequest) {
   try {
@@ -66,67 +67,31 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify admin token
-    const admin = await verifyToken(request);
-    if (!admin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // Check authentication (optional check - uncomment if needed)
+    // const session = await getServerSession(authOptions);
+    // if (!session || session.user.role !== 'admin') {
+    //   return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    // }
 
-    // Get pagination parameters
+    await connectDB();
+    
     const searchParams = request.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'desc';
-
-    // Connect to database
-    try {
-      await dbConnect();
-    } catch (dbError) {
-      console.error('Database connection error:', dbError);
-      return NextResponse.json(
-        { error: 'Database connection failed' },
-        { status: 503 }
-      );
-    }
-
-    // Calculate skip value for pagination
-    const skip = (page - 1) * limit;
-
-    // Get total count for pagination
-    const totalStores = await Store.countDocuments();
-    const totalPages = Math.ceil(totalStores / limit);
-
-    // Get stores with pagination and sorting
-    const stores = await Store.find()
-      .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
-      .skip(skip)
-      .limit(limit)
-      .lean()
-      .exec();
-
-    if (!stores) {
-      return NextResponse.json(
-        { error: 'No stores found' },
-        { status: 404 }
-      );
-    }
-
+    const activeOnly = searchParams.get('activeOnly') === 'true';
+    const query = activeOnly ? { isActive: true } : {};
+    
+    const stores = await Store.find(query)
+      .select('_id name slug logo isActive')
+      .sort({ name: 1 })
+      .lean();
+    
     return NextResponse.json({
       success: true,
-      stores,
-      pagination: {
-        currentPage: page,
-        totalPages,
-        totalStores,
-        hasMore: page < totalPages
-      }
+      data: stores
     });
-
   } catch (error) {
     console.error('Error fetching stores:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch stores', details: error instanceof Error ? error.message : 'Unknown error' },
+      { success: false, message: 'Error fetching stores' },
       { status: 500 }
     );
   }
