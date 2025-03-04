@@ -62,13 +62,16 @@ const CategorySchema = new Schema<ICategory>({
   timestamps: true,
 });
 
-// Generate slug from name
+// Add pre-save hook to generate slug from name
 CategorySchema.pre('save', function(next) {
   if (this.isModified('name')) {
-    this.slug = this.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    this.slug = this.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
   }
   next();
 });
+
+// Check if the model exists before creating a new one
+export default mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 
 // Create indexes for faster queries
 // Removed duplicate slug index as it's already indexed via unique: true
@@ -79,4 +82,3 @@ CategorySchema.index({ name: 'text', description: 'text' }); // Add text index f
 
 export const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 
-export default Category;
