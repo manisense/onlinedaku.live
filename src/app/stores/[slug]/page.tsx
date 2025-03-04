@@ -149,6 +149,10 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
               width={100}
               height={100}
               className="rounded-lg"
+              unoptimized={store.logo?.startsWith('http')}
+              onError={(e) => {
+                e.currentTarget.src = '/images/placeholder.png';
+              }}
             />
             <div>
               <h1 className="text-3xl font-bold">{store.name}</h1>

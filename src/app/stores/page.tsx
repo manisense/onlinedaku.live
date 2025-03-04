@@ -110,6 +110,7 @@ export default function StoresPage() {
                   width={120}
                   height={120}
                   style={{ objectFit: 'contain' }}
+                  unoptimized={store.logo?.startsWith('http')}
                   onError={(e) => {
                     e.currentTarget.src = '/product-placeholder.png';
                   }}
