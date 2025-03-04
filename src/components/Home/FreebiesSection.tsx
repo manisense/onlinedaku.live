@@ -26,7 +26,7 @@ const FreebieCard: React.FC<Freebie> = ({ title, image, store, link }) => {
             sizes="(max-width: 768px) 100vw, 25vw"
             className="object-contain"
             onError={(e) => {
-              e.currentTarget.src = '/product-placeholder.png';
+              e.currentTarget.src = '/freebies.png';
             }}
           />
           <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-0.5 rounded-full text-xs font-medium">
