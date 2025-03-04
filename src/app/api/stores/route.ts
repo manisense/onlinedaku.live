@@ -1,41 +1,39 @@
-import { NextRequest, NextResponse } from 'next/server';
-import dbConnect  from '@/utils/dbConnect';
+import { NextResponse } from 'next/server';
+import connectDB from '@/utils/database';
 import { Store } from '@/models/Store';
+import Deal from '@/models/Deal';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    await dbConnect();
-
-    // Get pagination parameters from URL
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const skip = (page - 1) * limit;
-    // Fetch stores with pagination
-    const stores = await Store.find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .select('name slug description logo website categories');
-
-    // Get total count for pagination
-    const totalStores = await Store.countDocuments({ isActive: true });
+    await connectDB();
+    
+    // Get all active stores
+    const stores = await Store.find({ isActive: true }).sort({ featured: -1, name: 1 });
+    
+    // For each store, count active deals
+    const storesWithDeals = await Promise.all(
+      stores.map(async (store) => {
+        const activeDeals = await Deal.countDocuments({ 
+          store: store.slug, 
+          isActive: true 
+        });
+        
+        return {
+          ...store.toObject(),
+          activeDeals
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,
-      data: stores,
-      meta: {
-        currentPage: page,
-        totalPages: Math.ceil(totalStores / limit),
-        totalItems: totalStores,
-        itemsPerPage: limit
-      }
+      message: 'Stores retrieved successfully',
+      data: storesWithDeals
     });
-
   } catch (error) {
     console.error('Error fetching stores:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch stores' },
+      { success: false, message: 'Error fetching stores' },
       { status: 500 }
     );
   }
