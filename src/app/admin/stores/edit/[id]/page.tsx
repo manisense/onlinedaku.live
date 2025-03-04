@@ -166,14 +166,11 @@ export default function EditStorePage() {
             {formData.logo && (
               <div className="mt-2">
                 <Image
-                  src={formData.logo}
+                  src={formData.logo || '/product-placeholder.png'}
                   alt="Store Logo"
                   width={100}
                   height={100}
                   className="object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = '/product-placeholder.png';
-                  }}
                 />
               </div>
             )}
