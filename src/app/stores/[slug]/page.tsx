@@ -8,11 +8,7 @@ import { Types } from 'mongoose';
 import MainLayout from '@/components/Layout/MainLayout';
 import SearchBar from '@/components/Search/SearchBar';
 
-interface StorePageProps {
-  params: {
-    slug: string;
-  };
-}
+
 
 interface StoreData {
   _id: Types.ObjectId;
@@ -129,8 +125,8 @@ async function getStoreData(slug: string) {
   };
 }
 
-export default async function StorePage({ params }: { params: Promise<StorePageProps>}) {
-  const { slug } = (await params).params;
+export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const data = await getStoreData(slug);
 
   if (!data) {

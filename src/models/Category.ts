@@ -77,6 +77,6 @@ CategorySchema.index({ isActive: 1 });
 CategorySchema.index({ tags: 1 });
 CategorySchema.index({ name: 'text', description: 'text' }); // Add text index for search functionality
 
-const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+export const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 
 export default Category;
