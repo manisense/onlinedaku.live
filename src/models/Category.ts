@@ -70,15 +70,13 @@ CategorySchema.pre('save', function(next) {
   next();
 });
 
-// Check if the model exists before creating a new one
-export default mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
-
 // Create indexes for faster queries
-// Removed duplicate slug index as it's already indexed via unique: true
 CategorySchema.index({ parentCategory: 1 });
 CategorySchema.index({ isActive: 1 });
 CategorySchema.index({ tags: 1 });
 CategorySchema.index({ name: 'text', description: 'text' }); // Add text index for search functionality
 
-export const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+// Export the model using a single export statement with proper model registration check
+const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+export default Category;
 
