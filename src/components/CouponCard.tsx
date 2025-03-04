@@ -120,7 +120,7 @@ export default function CouponCard({ coupon, showStore = true }: CouponCardProps
                   height={40}
                   style={{ objectFit: 'contain' }}
                   onError={(e) => {
-                    e.currentTarget.src = '/product-placeholder.png';
+                    e.currentTarget.src = '/coupon.png';
                   }}
                 />
               </div>
