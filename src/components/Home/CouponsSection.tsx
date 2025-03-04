@@ -17,7 +17,7 @@ interface Coupon {
 
 const CouponCard: React.FC<Coupon> = ({ title, image, store, discount, link }) => {
   // Ensure image and link have fallback values
-  const imageSrc = image || '/product-placeholder.png';
+  const imageSrc = image || '/coupon.png';
   const linkHref = link || '#';
 
   return (
