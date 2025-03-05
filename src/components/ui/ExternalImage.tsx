@@ -1,35 +1,53 @@
-'use client';
+"use client";
 
 import { useState } from 'react';
 import Image, { ImageProps } from 'next/image';
+import { FaImage } from 'react-icons/fa';
 
-interface ExternalImageProps extends Omit<ImageProps, 'src'> {
-  src: string;
-  fallbackSrc?: string;
-}
+// ExternalImage component that handles loading states and errors for external images
+export default function ExternalImage({ 
+  src, 
+  alt, 
+  width = 200, 
+  height = 200, 
+  className = '',
+  ...props 
+}: ImageProps) {
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-// This component handles external images with proper error handling
-export default function ExternalImage({
-  src,
-  alt,
-  fallbackSrc = 'https://via.placeholder.com/600x400?text=Image+Not+Available',
-  ...props
-}: ExternalImageProps) {
-  const [imgSrc, setImgSrc] = useState(src);
-  const [isError, setIsError] = useState(false);
+  if (!src || error) {
+    // Fallback when no image is available or on error
+    return (
+      <div 
+        className={`relative flex items-center justify-center bg-gray-100 ${className}`}
+        style={{ width, height }}
+      >
+        <FaImage className="text-gray-400" size={Math.min(Number(width), Number(height)) / 3} />
+      </div>
+    );
+  }
 
   return (
-    <Image
-      {...props}
-      src={imgSrc}
-      alt={alt}
-      onError={() => {
-        if (!isError) {
-          setImgSrc(fallbackSrc);
-          setIsError(true);
-        }
-      }}
-      unoptimized // Needed for external images
-    />
+    <div className={`relative ${className}`} style={{ width, height }}>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="animate-pulse bg-gray-200 rounded" style={{ width: '80%', height: '80%' }}></div>
+        </div>
+      )}
+      <Image
+        src={src}
+        alt={alt || "Product image"}
+        width={width}
+        height={height}
+        className={`${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+        onLoad={() => setLoading(false)}
+        onError={() => {
+          setLoading(false);
+          setError(true);
+        }}
+        {...props}
+      />
+    </div>
   );
 }

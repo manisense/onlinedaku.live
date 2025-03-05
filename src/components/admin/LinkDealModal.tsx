@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FaSpinner, FaTimes, FaLink, FaShoppingCart } from 'react-icons/fa';
+import { FaSpinner, FaTimes, FaLink, FaShoppingCart, FaMagic, FaCode } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import ExternalImage from '@/components/ui/ExternalImage';
 
@@ -26,8 +26,9 @@ interface ProductData {
   originalPrice: number;
   discountPercentage: number;
   image: string;
-  store: 'amazon' | 'flipkart' | 'myntra' | 'other';
+  store: string;
   link: string;
+  category?: string;
 }
 
 interface DealData {
@@ -47,20 +48,24 @@ interface DealData {
   isActive: boolean;
 }
 
+type ExtractionMethod = 'firecrawl' | 'standard';
+
 export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealModalProps) {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [extractionMethod, setExtractionMethod] = useState<ExtractionMethod>('firecrawl');
   const [productData, setProductData] = useState<ProductData | null>(null);
   const [dealData, setDealData] = useState<Partial<DealData>>({
     isActive: true,
     startDate: new Date(),
-    endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)), // Default 1 month
+    endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
     category: '',
   });
   const [error, setError] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
 
+  // Fetch categories when modal opens
   useEffect(() => {
     const fetchCategories = async () => {
       if (!isOpen) return;
@@ -98,7 +103,7 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
     setError('');
   };
 
-  const fetchProductData = async () => {
+  const extractWithFireCrawl = async () => {
     if (!url || !url.trim()) {
       setError('Please enter a valid URL');
       return;
@@ -109,6 +114,69 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
 
     try {
       const token = localStorage.getItem('adminToken');
+      
+      const response = await fetch('/api/admin/extract', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ url: url.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || 'Failed to extract product data');
+        toast.error('Could not extract product information with AI extraction. Please try the standard method instead.');
+        setLoading(false);
+        return;
+      }
+
+      // Handle successful AI extraction
+      if (data.result && data.result.product) {
+        const extractedProduct = data.result.product;
+        
+        // Convert to our ProductData format
+        const product: ProductData = {
+          title: extractedProduct.title,
+          description: extractedProduct.description || '',
+          price: extractedProduct.price || 0,
+          originalPrice: extractedProduct.originalPrice || 0,
+          discountPercentage: extractedProduct.discountPercentage || 0,
+          image: extractedProduct.image || '',
+          store: extractedProduct.store || '',
+          category: extractedProduct.category || '',
+          link: url.trim()
+        };
+        
+        processExtractedProduct(product);
+        toast.success('Product details extracted successfully using AI');
+      } else {
+        setError('Invalid response format from AI extraction service');
+        toast.error('Failed to parse product details');
+      }
+    } catch (err) {
+      console.error('Error extracting product with AI:', err);
+      setError('Network error while extracting data with AI');
+      toast.error('Failed to connect to AI extraction service. Please try the standard method instead.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const extractWithStandardMethod = async () => {
+    if (!url || !url.trim()) {
+      setError('Please enter a valid URL');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('adminToken');
+      
       const response = await fetch('/api/admin/deals/fetch-product', {
         method: 'POST',
         headers: {
@@ -120,74 +188,91 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
 
       const data = await response.json();
 
-      if (!response.ok) {
-        // Handle error but allow manual entry if partialData is available
-        if (data.partialData) {
-          setProductData(data.partialData);
-          setDealData({
-            ...dealData,
-            title: data.partialData.title || '',
-            description: data.partialData.description || '',
-            price: data.partialData.price || 0,
-            originalPrice: data.partialData.originalPrice || 0,
-            store: data.partialData.store || '',
-            image: data.partialData.image || '',
-            link: url.trim(),
-          });
-          toast('Some product details could not be extracted. Please review and complete.', {
-            icon: '⚠️',
-            style: { background: '#FFF3CD', color: '#856404' }
-          });
-          return;
-        }
-        
+      if (!response.ok || !data.success) {
         setError(data.error || 'Failed to fetch product data');
-        toast.error('Could not extract product information. You can add details manually.');
+        toast.error('Could not extract product information using standard method. Please try the AI extraction instead.');
+        setLoading(false);
         return;
       }
 
-      setProductData(data.productData);
+      // Handle successful extraction
+      if (data.productData) {
+        processExtractedProduct(data.productData);
+        toast.success('Product details extracted successfully using standard method');
+      } else {
+        setError('Invalid response format from standard extraction');
+        toast.error('Failed to parse product details');
+      }
+    } catch (err) {
+      console.error('Error extracting product with standard method:', err);
+      setError('Network error while extracting data');
+      toast.error('Failed to connect to standard extraction service. Please try the AI method instead.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Common processing for extracted products from either method
+  const processExtractedProduct = (product: ProductData) => {
+    setProductData(product);
+    
+    // Try to find a matching category if one was extracted
+    let suggestedCategory = '';
+    if (product.category && categories.length > 0) {
+      // Look for exact match first
+      const matchingCategory = categories.find(
+        cat => cat.name.toLowerCase() === product.category?.toLowerCase()
+      );
       
-      // Try to determine a suitable category based on product title or description
-      let suggestedCategory = '';
-      if (categories.length > 0) {
-        // Simple keyword matching for category suggestion
-        const productTitle = data.productData.title.toLowerCase();
-        const productDesc = (data.productData.description || '').toLowerCase();
-        
-        // Check for common category keywords in title and description
+      if (matchingCategory) {
+        suggestedCategory = matchingCategory._id;
+      } else {
+        // Try partial match
         for (const category of categories) {
           const categoryName = category.name.toLowerCase();
-          if (productTitle.includes(categoryName) || productDesc.includes(categoryName)) {
+          if (product.category.toLowerCase().includes(categoryName)) {
             suggestedCategory = category._id;
             break;
           }
         }
       }
+    }
+    
+    // If no category was found by exact/partial match, try keyword matching
+    if (!suggestedCategory && categories.length > 0) {
+      const productTitle = product.title.toLowerCase();
+      const productDesc = (product.description || '').toLowerCase();
       
-      // Pre-fill deal data
-      setDealData({
-        ...dealData,
-        title: data.productData.title,
-        description: data.productData.description || '',
-        price: data.productData.price,
-        originalPrice: data.productData.originalPrice,
-        store: data.productData.store,
-        discountType: 'percentage',
-        discountValue: data.productData.discountPercentage,
-        image: data.productData.image,
-        link: data.productData.link,
-        category: suggestedCategory || dealData.category,
-      });
+      for (const category of categories) {
+        const categoryName = category.name.toLowerCase();
+        if (productTitle.includes(categoryName) || productDesc.includes(categoryName)) {
+          suggestedCategory = category._id;
+          break;
+        }
+      }
+    }
+    
+    // Pre-fill deal data
+    setDealData({
+      ...dealData,
+      title: product.title,
+      description: product.description || '',
+      price: product.price,
+      originalPrice: product.originalPrice,
+      store: product.store,
+      discountType: 'percentage',
+      discountValue: product.discountPercentage,
+      image: product.image,
+      link: product.link,
+      category: suggestedCategory || dealData.category,
+    });
+  };
 
-      toast.success('Product details fetched successfully');
-
-    } catch (err) {
-      console.error('Error fetching product:', err);
-      setError('Network error while fetching product data');
-      toast.error('Failed to connect to server. Please try again later.');
-    } finally {
-      setLoading(false);
+  const handleFetch = () => {
+    if (extractionMethod === 'firecrawl') {
+      extractWithFireCrawl();
+    } else {
+      extractWithStandardMethod();
     }
   };
 
@@ -238,7 +323,6 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
     setError('');
   };
 
-  // Function to truncate text
   const truncateText = (text: string | undefined, maxLength: number): string => {
     if (!text) return '';
     return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
@@ -246,8 +330,8 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b flex items-center justify-between">
+      <div className="bg-white text-gray-800 rounded-lg p-4 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-4 text-gray-800 border-b flex items-center justify-between">
           <h2 className="text-xl font-semibold">Add Deal from Product Link</h2>
           <button 
             onClick={onClose}
@@ -268,28 +352,70 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Product URL
             </label>
-            <div className="flex">
-              <input
-                type="url"
-                value={url}
-                onChange={handleUrlChange}
-                placeholder="https://www.amazon.in/product/..."
-                className="flex-grow px-4 py-2 border rounded-l-md focus:ring-indigo-500 focus:border-indigo-500"
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={fetchProductData}
-                disabled={loading}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700 focus:outline-none flex items-center"
-              >
-                {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaLink className="mr-2" />}
-                {loading ? 'Fetching...' : 'Fetch'}
-              </button>
+            <div className="flex flex-col space-y-3">
+              <div className="flex text-indigo-900">
+                <input
+                  type="url"
+                  value={url}
+                  onChange={handleUrlChange}
+                  placeholder="https://www.example.com/product/..."
+                  className="flex-grow px-4 py-2 border rounded-l-md focus:ring-indigo-500 focus:border-indigo-500"
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={handleFetch}
+                  disabled={loading}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700 focus:outline-none flex items-center"
+                >
+                  {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaLink className="mr-2" />}
+                  {loading ? 'Extracting...' : 'Extract'}
+                </button>
+              </div>
+              
+              {/* Extraction Method Selection */}
+              <div className="flex flex-wrap items-center justify-center space-x-6">
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="firecrawl-method"
+                    name="extraction-method"
+                    value="firecrawl"
+                    checked={extractionMethod === 'firecrawl'}
+                    onChange={() => setExtractionMethod('firecrawl')}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                  />
+                  <label htmlFor="firecrawl-method" className="ml-2 flex items-center text-sm text-gray-700">
+                    <FaMagic className="mr-1 text-purple-500" />
+                    AI Extraction (Universal)
+                  </label>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    id="standard-method"
+                    name="extraction-method"
+                    value="standard"
+                    checked={extractionMethod === 'standard'}
+                    onChange={() => setExtractionMethod('standard')}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300"
+                  />
+                  <label htmlFor="standard-method" className="ml-2 flex items-center text-sm text-gray-700">
+                    <FaCode className="mr-1 text-blue-500" />
+                    Standard Method (Amazon, Flipkart, etc.)
+                  </label>
+                </div>
+              </div>
+              
+              <div className="text-center text-xs text-gray-500">
+                {extractionMethod === 'firecrawl' ? (
+                  <span>AI extraction works with most product pages and provides better category detection</span>
+                ) : (
+                  <span>Standard extraction is optimized for specific e-commerce sites like Amazon and Flipkart</span>
+                )}
+              </div>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Supported stores: Amazon, Flipkart, and Myntra
-            </p>
           </div>
           
           {productData && (
@@ -408,7 +534,7 @@ export default function LinkDealModal({ isOpen, onClose, onSubmit }: LinkDealMod
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    MRP / Original Price (₹)
+                     Original Price (₹)
                   </label>
                   <input
                     type="number"
