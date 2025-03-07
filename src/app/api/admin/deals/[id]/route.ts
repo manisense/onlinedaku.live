@@ -3,6 +3,8 @@ import dbConnect from '@/utils/dbConnect';
 import Deal from '@/models/Deal';
 import { verifyToken } from '@/utils/auth';
 
+export const maxDuration = 300;
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
