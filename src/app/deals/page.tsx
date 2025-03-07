@@ -2,13 +2,12 @@
 
 import { useState, useEffect, useRef, Suspense } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
-import { useLoading } from '@/context/LoadingContext';
-import Loader from '@/components/ui/Loader';
 import SearchBar from '@/components/Search/SearchBar';
 import ProductCard from '@/components/ProductCard';
 import CategoryFilter from '@/components/CategoryFilter';
 import { useSearchParams } from 'next/navigation';
 import { Types } from 'mongoose';
+import DealsPageSkeleton from '@/components/ui/DealsPageSkeleton';
 
 interface Deal {
   _id: string;
@@ -32,7 +31,6 @@ function DealsContent() {
   const [deals, setDeals] = useState<Deal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const { showLoader, hideLoader } = useLoading();
   
   // Use a ref to prevent infinite fetching
   const fetchedRef = useRef(false);
@@ -52,7 +50,7 @@ function DealsContent() {
     async function fetchDeals() {
       try {
         setIsLoading(true);
-        showLoader('Loading awesome deals for you...');
+        // Don't show the global loader, we'll use the skeleton instead
         
         // Get category from URL if present
         const categorySlug = searchParams.get('category');
@@ -90,13 +88,19 @@ function DealsContent() {
         console.error(err);
         setError('Failed to load deals');
       } finally {
-        setIsLoading(false);
-        hideLoader();
+        // Add a small delay to show the skeleton for a moment
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 800);
       }
     }
 
     fetchDeals();
-  }, [searchParams, showLoader, hideLoader]); // Update when search params change
+  }, [searchParams]); // Update when search params change
+
+  if (isLoading) {
+    return <DealsPageSkeleton />;
+  }
 
   return (
     <>
@@ -115,11 +119,7 @@ function DealsContent() {
                 </div>
               )}
               
-              {isLoading ? (
-                <div className="flex justify-center py-10">
-                  <Loader size="large" text="Finding deals for you..." />
-                </div>
-              ) : deals.length === 0 ? (
+              {deals.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-gray-500">No deals found</p>
                 </div>
@@ -157,11 +157,7 @@ function DealsContent() {
 export default function DealsPage() {
   return (
     <MainLayout>
-      <Suspense fallback={
-        <div className="min-h-screen flex justify-center items-center">
-          <Loader size="large" text="Loading deals..." />
-        </div>
-      }>
+      <Suspense fallback={<DealsPageSkeleton />}>
         <DealsContent />
       </Suspense>
     </MainLayout>

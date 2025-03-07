@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FaArrowRight } from 'react-icons/fa';
-import Loader from '../ui/Loader';
+import SkeletonCard from '../ui/SkeletonCard';
 
 interface Freebie {
   _id: string;
@@ -124,7 +124,10 @@ const FreebiesSection: React.FC = () => {
           }
         ]);
       } finally {
-        setLoading(false);
+        // Add a small delay to show the skeleton for a moment
+        setTimeout(() => {
+          setLoading(false);
+        }, 800);
       }
     };
 
@@ -142,9 +145,7 @@ const FreebiesSection: React.FC = () => {
         </div>
         
         {loading ? (
-          <div className="w-full flex justify-center items-center py-8">
-            <Loader size="large" text="Loading freebies..." />
-          </div>
+          <SkeletonCard count={8} />
         ) : error ? (
           <div className="w-full text-center py-8 text-red-600">{error}</div>
         ) : (

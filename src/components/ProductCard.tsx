@@ -1,6 +1,7 @@
 import Image from 'next/image';
-import { FaShoppingCart } from 'react-icons/fa';
+import { FaTag, FaExternalLinkAlt } from 'react-icons/fa';
 import Link from 'next/link';
+import { useState } from 'react';
 
 interface ProductCardProps {
   product: {
@@ -25,78 +26,113 @@ const truncateText = (text: string, maxLength: number) => {
 };
 
 export default function ProductCard({ product }: ProductCardProps) {
-  //const [recommendedDeals, setRecommendedDeals] = useState<ProductCardProps['product'][]>([]);
+  const [isHovered, setIsHovered] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchRecommendedDeals = async () => {
-  //     try {
-  //       const response = await fetch(`/api/deals/recommended?excludeId=${product.id || ''}&limit=4`);
-  //       if (response.ok) {
-  //         const data = await response.json();
-  //         setRecommendedDeals(data.deals || []);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching recommended deals:', error);
-  //     }
-  //   };
+  const handleImageError = () => {
+    setImageError(true);
+  };
 
-  //   fetchRecommendedDeals();
-  // }, [product.id]);
   return (
-    <div className="space-y-8">
-      <Link href={product.id ? `/deals/${product.id}` : '#'} className="block">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
-          <div className="relative h-48 w-full">
+    <div className="h-full">
+      <Link href={product.id ? `/deals/${product.id}` : '#'} className="block h-full">
+        <div 
+          className="bg-white rounded-lg shadow-sm overflow-hidden transition-all duration-300 flex flex-col h-full relative group"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          style={{
+            transform: isHovered ? 'translateY(-4px)' : 'translateY(0)',
+            boxShadow: isHovered ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)'
+          }}
+        >
+          {/* Discount Badge */}
+          {product.discountValue > 0 && (
+            <div className="absolute top-3 right-3 z-10">
+              <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center">
+                <FaTag className="mr-1" size={10} />
+                {product.discountValue}% OFF
+              </div>
+            </div>
+          )}
+          
+          {/* Category Badge */}
+          {product.category && (
+            <div className="absolute top-3 left-3 z-10">
+              <div 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.location.href = `/deals?category=${product?.category?.slug}`;
+                }}
+                className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-1 rounded-full hover:bg-indigo-200 transition-colors cursor-pointer"
+              >
+                {product.category.name}
+              </div>
+            </div>
+          )}
+          
+          {/* Image Container */}
+          <div className="relative h-48 w-full overflow-hidden bg-gray-50">
             <Image
-              src={product.image}
+              src={imageError ? '/product-placeholder.png' : product.image}
               alt={product.title}
               fill
-              className="object-contain"
+              className="object-contain transition-transform duration-300 p-2"
+              style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={handleImageError}
+              priority={false}
             />
           </div>
+          
+          {/* Content */}
           <div className="p-4 flex flex-col flex-grow">
-            <h3 className="text-lg font-semibold mb-2 line-clamp-2">
+            <h3 className="text-lg font-semibold mb-2 line-clamp-2 text-gray-800 group-hover:text-indigo-600 transition-colors">
               {truncateText(product.title, 60)}
             </h3>
+            
             <p className="text-gray-600 mb-4 text-sm line-clamp-3">
               {truncateText(product.description, 150)}
             </p>
+            
             <div className="mt-auto">
-              {product.category && (
-                <div 
+              {/* Price Section */}
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl font-bold text-gray-900">₹{product.price.toLocaleString()}</span>
+                {product.originalPrice > product.price && (
+                  <>
+                    <span className="text-gray-500 line-through text-sm">₹{product.originalPrice.toLocaleString()}</span>
+                  </>
+                )}
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <Link 
+                  href={product.id ? `/deals/${product.id}` : '#'} 
+                  className="bg-indigo-100 text-indigo-700 py-2 px-4 rounded-md flex items-center justify-center gap-1 hover:bg-indigo-200 transition-colors text-sm font-medium"
+                >
+                  View Details
+                </Link>
+                <a
+                  href={product.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    window.location.href = `/deals?category=${product?.category?.slug}`;
+                    window.open(product.link, '_blank', 'noopener,noreferrer');
                   }}
-                  className="inline-block mb-2 cursor-pointer"
+                  className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center justify-center gap-1 hover:bg-indigo-700 transition-colors text-sm font-medium"
                 >
-                  <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded-full hover:bg-gray-200">
-                    {product.category.name}
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-xl font-bold">₹{product.price}</span>
-                <span className="text-gray-500 line-through text-sm">₹{product.originalPrice}</span>
-                <span className="text-green-600 text-sm">({product.discountValue}% off)</span>
+                  <FaExternalLinkAlt size={12} />
+                  Buy Now
+                </a>
               </div>
-              <button
-                onClick={() => {
-                  window.open(product.link, '_blank', 'noopener,noreferrer');
-                }}
-                className="bg-blue-600 text-white w-full py-2 px-4 rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
-              >
-                <FaShoppingCart />
-                Buy Now
-              </button>
             </div>
           </div>
         </div>
       </Link>
-
-     
     </div>
   );
 }

@@ -86,6 +86,42 @@ body {
   padding: 0;
 }
 
+/* Skeleton Wave Animation */
+.skeleton-wave {
+  position: relative;
+  overflow: hidden;
+  background-color: #e2e8f0;
+}
+
+.skeleton-wave::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0));
+  animation: shimmer 2s infinite;
+  content: '';
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Dark mode support for skeleton */
+@media (prefers-color-scheme: dark) {
+  .skeleton-wave {
+    background-color: #374151;
+  }
+  
+  .skeleton-wave::after {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.05) 20%, rgba(255, 255, 255, 0.1) 60%, rgba(255, 255, 255, 0));
+  }
+}
+
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;

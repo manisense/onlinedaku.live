@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import Loader from '../ui/Loader';
+import SkeletonBannerCarousel from '../ui/SkeletonBannerCarousel';
 
 interface Banner {
   _id: string;
@@ -35,7 +35,10 @@ const BannerCarousel: React.FC = () => {
         console.error('Error fetching banners:', err);
         setError('Failed to load banners');
       } finally {
-        setLoading(false);
+        // Add a small delay to show the skeleton for a moment
+        setTimeout(() => {
+          setLoading(false);
+        }, 800);
       }
     };
 
@@ -49,10 +52,11 @@ const BannerCarousel: React.FC = () => {
         setCurrentIndex((prevIndex) =>
           prevIndex >= banners.length - 1 ? 0 : prevIndex + 1
         );
-      }, 5000); // Increased interval for banner slides
+      }, 5000);
+
       return () => clearInterval(interval);
     }
-  }, [isHovered, banners.length]);
+  }, [banners.length, isHovered]);
 
   const nextSlide = () => {
     setCurrentIndex((prevIndex) =>
@@ -62,93 +66,89 @@ const BannerCarousel: React.FC = () => {
 
   const prevSlide = () => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? banners.length - 1 : prevIndex - 1
+      prevIndex <= 0 ? banners.length - 1 : prevIndex - 1
     );
   };
 
+  if (loading) {
+    return <SkeletonBannerCarousel height={400} />;
+  }
+
+  if (error || banners.length === 0) {
+    return null; // Don't show anything if there's an error or no banners
+  }
+
   return (
-    <div
-      className="relative w-full overflow-hidden bg-gray-50"
+    <div 
+      className="relative w-full max-w-screen-xl mx-auto px-4 py-6"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="container mx-auto">
-        <div className="relative">
-          {loading ? (
-            <div className="w-full flex justify-center items-center py-8">
-              <Loader size="large" text="Loading banners..." />
+      <div className="relative h-[400px] overflow-hidden rounded-lg">
+        {banners.map((banner, index) => (
+          <div
+            key={banner._id}
+            className={`absolute inset-0 transition-opacity duration-500 ${
+              index === currentIndex ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            }`}
+          >
+            <Image
+              src={banner.image}
+              alt={banner.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 1280px) 100vw, 1280px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute bottom-0 left-0 p-6 text-white">
+              <h2 className="text-2xl md:text-3xl font-bold mb-2">{banner.title}</h2>
+              <Link 
+                href={banner.link} 
+                className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md transition-colors mt-4"
+              >
+                Learn More
+              </Link>
             </div>
-          ) : error ? (
-            <div className="w-full text-center py-8 text-red-600">{error}</div>
-          ) : (
-            <div className="overflow-hidden">
-              <div 
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: `translateX(-${currentIndex * 100}%)`,
-                }}
-              >
-                {banners.map((banner) => (
-                  <div
-                    key={banner._id}
-                    className="w-full flex-shrink-0"
-                  >
-                    <Link href={banner.link}>
-                      <div className="relative aspect-[21/9] w-full">
-                        <Image
-                          src={banner.image}
-                          alt={banner.title}
-                          fill
-                          sizes="100vw"
-                          className="object-cover"
-                          priority
-                          onError={(e) => {
-                            e.currentTarget.src = '/banner-placeholder.png';
-                          }}
-                          unoptimized
-                        />
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Navigation Buttons */}
-          {banners.length > 1 && (
-            <>
-              <button
-                onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition-all duration-200 z-10"
-              >
-                <FaChevronLeft className="w-6 h-6" />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-md transition-all duration-200 z-10"
-              >
-                <FaChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
-          {/* Dots Indicator */}
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-3">
-            {banners.length > 1 && banners.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                  index === currentIndex
-                    ? 'bg-indigo-600 w-4'
-                    : 'bg-white/60 hover:bg-white'
-                }`}
-              />
-            ))}
           </div>
-        </div>
+        ))}
+
+        {/* Navigation Arrows */}
+        {banners.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors"
+              aria-label="Previous slide"
+            >
+              <FaChevronLeft size={20} />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition-colors"
+              aria-label="Next slide"
+            >
+              <FaChevronRight size={20} />
+            </button>
+          </>
+        )}
       </div>
+
+      {/* Pagination Indicators */}
+      {banners.length > 1 && (
+        <div className="flex justify-center mt-4 space-x-2">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`w-6 h-1 rounded-full transition-colors ${
+                index === currentIndex ? 'bg-indigo-600' : 'bg-gray-300'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
