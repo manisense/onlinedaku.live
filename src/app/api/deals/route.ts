@@ -4,7 +4,7 @@ import Deal from '@/models/Deal';
 import Category from '@/models/Category';
 import { Types } from 'mongoose';
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   try {

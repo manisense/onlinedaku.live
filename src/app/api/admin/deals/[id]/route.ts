@@ -3,7 +3,7 @@ import dbConnect from '@/utils/dbConnect';
 import Deal from '@/models/Deal';
 import { verifyToken } from '@/utils/auth';
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function PUT(
   request: NextRequest,

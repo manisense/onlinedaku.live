@@ -5,7 +5,7 @@ import Blog from '@/models/Blog';
 import { IDeal } from '@/models/Deal';
 import { IBlog } from '@/models/Blog';
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   try {
