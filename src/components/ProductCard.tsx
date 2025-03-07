@@ -77,11 +77,12 @@ export default function ProductCard({ product }: ProductCardProps) {
               src={imageError ? '/product-placeholder.png' : product.image}
               alt={product.title}
               fill
+              unoptimized={true}
               className="object-contain transition-transform duration-300 p-2"
               style={{ transform: isHovered ? 'scale(1.05)' : 'scale(1)' }}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               onError={handleImageError}
-              priority={false}
+              loading="lazy"
             />
           </div>
           

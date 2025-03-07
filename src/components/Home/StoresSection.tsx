@@ -26,8 +26,10 @@ const StoreCard: React.FC<Store> = ({ name, logo,  description }) => {
             src={logo || '/product-placeholder.png'}
             alt={name}
             fill
+            unoptimized={true}
             sizes="(max-width: 768px) 100vw, 25vw"
             className="object-contain"
+            loading="lazy"
             onError={(e) => {
               e.currentTarget.src = '/product-placeholder.png';
             }}

@@ -20,6 +20,7 @@ const BannerCarousel: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -70,6 +71,13 @@ const BannerCarousel: React.FC = () => {
     );
   };
 
+  const handleImageError = (bannerId: string) => {
+    setImageErrors(prev => ({
+      ...prev,
+      [bannerId]: true
+    }));
+  };
+
   if (loading) {
     return <SkeletonBannerCarousel height={400} />;
   }
@@ -93,12 +101,15 @@ const BannerCarousel: React.FC = () => {
             }`}
           >
             <Image
-              src={banner.image}
+              src={imageErrors[banner._id] ? '/banner-placeholder.png' : banner.image}
               alt={banner.title}
               fill
-              priority
+              priority={index === currentIndex}
+              unoptimized={true}
               className="object-cover"
               sizes="(max-width: 1280px) 100vw, 1280px"
+              onError={() => handleImageError(banner._id)}
+              loading={index === currentIndex ? 'eager' : 'lazy'}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-0 left-0 p-6 text-white">

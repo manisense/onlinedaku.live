@@ -33,8 +33,10 @@ const DealsCard: React.FC<Deal> = ({ title, image, store, discount, _id }) => {
             src={imageSrc}
             alt={title || 'Deal Image'}
             fill
+            unoptimized={true}
             sizes="(max-width: 768px) 100vw, 25vw"
             className="object-contain"
+            loading="lazy"
             onError={(e) => {
               e.currentTarget.src = '/product-placeholder.png';
             }}
