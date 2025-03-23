@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import SkeletonBannerCarousel from '../ui/SkeletonBannerCarousel';
 
 interface Banner {
@@ -56,19 +55,9 @@ const BannerCarousel: React.FC = () => {
 
       return () => clearInterval(interval);
     }
+
   }, [banners.length, isHovered]);
 
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex >= banners.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex <= 0 ? banners.length - 1 : prevIndex - 1
-    );
-  };
 
   const handleImageError = (bannerId: string) => {
     setImageErrors(prev => ({
@@ -82,16 +71,16 @@ const BannerCarousel: React.FC = () => {
   }
 
   if (error || banners.length === 0) {
-    return null; // Don't show anything if there's an error or no banners
+    return null; 
   }
 
   return (
     <div 
-      className="relative w-full max-w-screen-xl mx-auto px-4 py-6"
+      className="relative p-3 max-w-screen-xl  mx-auto"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative h-[400px] overflow-hidden rounded-lg">
+      <div className="relative  md:min-h-[500px] min-h-[200px] min-w-max rounded-lg">
         {banners.map((banner, index) => (
           <div
             key={banner._id}
@@ -105,18 +94,18 @@ const BannerCarousel: React.FC = () => {
               fill
               priority={index === currentIndex}
               unoptimized={true}
-              className="object-cover"
-              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-contain h-max"
+             
               onError={() => handleImageError(banner._id)}
               loading={index === currentIndex ? 'eager' : 'lazy'}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-transparent" />
        
           </div>
         ))}
 
         {/* Navigation Arrows */}
-        {banners.length > 1 && (
+        {/* {banners.length > 1 && (
           <>
             <button
               onClick={prevSlide}
@@ -133,7 +122,7 @@ const BannerCarousel: React.FC = () => {
               <FaChevronRight size={20} />
             </button>
           </>
-        )}
+        )} */}
       </div>
 
       {/* Pagination Indicators */}
