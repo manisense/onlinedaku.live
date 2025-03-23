@@ -6,7 +6,7 @@ export interface IDeal extends Document {
   price: number;
   originalPrice: number;
   store: string;
-  category: mongoose.Types.ObjectId | string; // Updated to support both ObjectId and string
+  category: mongoose.Types.ObjectId | string; 
   tags?: string[];
   discountType: 'percentage' | 'fixed';
   discountValue: number;
@@ -52,6 +52,13 @@ const DealSchema = new Schema<IDeal>(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Category',
       required: [true, 'Category is required'],
+      validate: {
+        validator: function(value) {
+          // Accept both ObjectId and string values
+          return mongoose.Types.ObjectId.isValid(value) || typeof value === 'string';
+        },
+        message: props => `${props.value} is not a valid category ID or string!`
+      }
     },
     tags: [{
       type: String,

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/utils/dbConnect';
 import Deal from '@/models/Deal';
 import Category from '@/models/Category';
-import { Types } from 'mongoose';
+import mongoose from 'mongoose';
 
 export const maxDuration = 60;
 
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
       isActive: boolean;
       startDate: { $lte: Date };
       endDate: { $gt: Date };
-      category?: { $in: Types.ObjectId[] }; // Use 'any' temporarily to handle both string and ObjectId
+      category?: string | mongoose.Types.ObjectId; // Using any to handle both string and ObjectId
       store?: string;
     }
     
@@ -50,7 +50,8 @@ export async function GET(req: NextRequest) {
             category._id, 
             ...subcategories.map(sub => sub._id)
           ];
-          query.category = { $in: categoryIds };
+          // Fix the query to use proper mongoose syntax for $in operator
+          query.category = { $in: categoryIds } as unknown as mongoose.Types.ObjectId;
         } else {
           console.log(`Category with slug ${categorySlug} not found`);
         }
@@ -84,7 +85,6 @@ export async function GET(req: NextRequest) {
     
     console.log('Final query:', JSON.stringify(query));
     
-    // Get all deals with proper handling for categories
     try {
       // Get deals with pagination
       const deals = await Deal.find(query)
@@ -93,39 +93,101 @@ export async function GET(req: NextRequest) {
         .limit(limit)
         .lean();
       
+      // Manually handle category population to avoid ObjectId casting errors
+      const processedDeals = await Promise.all(deals.map(async (deal) => {
+        // Skip population if category is not a valid ObjectId
+        if (deal.category && mongoose.Types.ObjectId.isValid(deal.category)) {
+          try {
+            const categoryDoc = await Category.findById(deal.category).lean();
+            if (categoryDoc) {
+              return {
+                ...deal,
+                category: categoryDoc
+              };
+            }
+          } catch (err) {
+            console.error('Error populating category:', err);
+          }
+        }
+        
+        // If category is a string or population failed, create a placeholder object
+        if (typeof deal.category === 'string') {
+          return {
+            ...deal,
+            category: {
+              _id: '',
+              name: deal.category,
+              slug: deal.category.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+            }
+          };
+        }
+        
+        // Fallback if no category or invalid format
+        return {
+          ...deal,
+          category: { _id: '', name: 'General', slug: 'general' }
+        };
+      }));
+      
       // Count total deals for pagination
       const totalDeals = await Deal.countDocuments(query);
       
-      console.log(`Found ${totalDeals} deals, returning ${deals.length}`);
+      console.log(`Found ${totalDeals} deals, returning ${processedDeals.length}`);
       
-      if (deals.length === 0 && page === 1) {
+      if (processedDeals.length === 0 && page === 1) {
         // If no deals found with filters on first page, return newest deals as fallback
         const recentDeals = await Deal.find({ isActive: true })
           .sort({ createdAt: -1 })
           .limit(limit)
           .lean();
         
+        // Manually handle category population for recent deals
+        const processedRecentDeals = await Promise.all(recentDeals.map(async (deal) => {
+          // Skip population if category is not a valid ObjectId
+          if (deal.category && mongoose.Types.ObjectId.isValid(deal.category)) {
+            try {
+              const categoryDoc = await Category.findById(deal.category).lean();
+              if (categoryDoc) {
+                return {
+                  ...deal,
+                  category: categoryDoc
+                };
+              }
+            } catch (err) {
+              console.error('Error populating category:', err);
+            }
+          }
+          
+          // If category is a string or population failed, create a placeholder object
+          if (typeof deal.category === 'string') {
+            return {
+              ...deal,
+              category: {
+                _id: '',
+                name: deal.category,
+                slug: deal.category.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+              }
+            };
+          }
+          
+          // Fallback if no category or invalid format
+          return {
+            ...deal,
+            category: { _id: '', name: 'General', slug: 'general' }
+          };
+        }));
+        
         return NextResponse.json({
           success: true,
-          deals: recentDeals,
+          deals: processedRecentDeals,
           pagination: {
             currentPage: 1,
             totalPages: 1,
-            total: recentDeals.length,
+            total: processedRecentDeals.length,
             hasMore: false
           }
         });
       }
-      
-      // Process deals to ensure category is properly formatted
-      const processedDeals = deals.map(deal => {
-        // If category is a string, leave it as is
-        // If it's an ObjectId reference, it will be returned as is
-        return {
-          ...deal,
-          // You can add additional processing here if needed
-        };
-      });
       
       const totalPages = Math.ceil(totalDeals / limit);
       

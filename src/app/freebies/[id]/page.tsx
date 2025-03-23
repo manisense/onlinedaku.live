@@ -153,6 +153,7 @@ export default function FreebieDetailPage() {
                       src={freebie.image}
                       alt={freebie.title}
                       fill
+                      unoptimized={true}
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-contain"
                       priority
@@ -167,6 +168,7 @@ export default function FreebieDetailPage() {
                       width={300}
                       height={300}
                       className="mx-auto"
+                      unoptimized={true}
                     />
                   )}
                 </div>

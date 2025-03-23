@@ -27,8 +27,13 @@ export default function FreebieCard({ freebie }: FreebieCardProps) {
               src={freebie.image}
               alt={freebie.title}
               fill
+              unoptimized={true}
               className="object-contain"
+              loading="lazy"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={(e) => {
+                e.currentTarget.src = '/freebies.png';
+              }}
             />
             <div className="absolute top-2 right-2 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
               FREE

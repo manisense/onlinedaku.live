@@ -14,7 +14,11 @@ interface Deal {
   title: string;
   description: string;
   store: string;
-  category: string;
+  category: {
+    _id: string;
+    name: string;
+    slug: string;
+  } | string;
   discountType: 'percentage' | 'fixed';
   discountValue: number;
   price: number;
@@ -87,15 +91,32 @@ export default function DealDetailPage() {
     const fetchDeal = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/deals/${dealId}`);
+        setError(null); // Clear any previous errors
         
+        if (!dealId) {
+          setError('Invalid deal ID');
+          setLoading(false);
+          return;
+        }
+        
+        const response = await fetch(`/api/deals/${dealId}`);
         const data = await response.json();
         
-        if (!response.ok || !data.success) {
+        // Check if the response is not ok
+        if (!response.ok) {
+          console.error('API error response:', data);
+          throw new Error(data.error || `Server error: ${response.status}`);
+        }
+        
+        // Check if the response doesn't have the success flag
+        if (!data.success) {
+          console.error('API unsuccessful response:', data);
           throw new Error(data.error || 'Failed to fetch deal details');
         }
         
+        // Check if there's no deal in the response
         if (!data.deal) {
+          console.error('No deal in response:', data);
           throw new Error('Deal not found');
         }
         
@@ -104,16 +125,22 @@ export default function DealDetailPage() {
         // Fetch random recommended deals
         try {
           const recommendedResponse = await fetch(`/api/deals/recommended?limit=4&excludeId=${dealId}`);
-          if (recommendedResponse.ok) {
-            const recommendedData = await recommendedResponse.json();
+          const recommendedData = await recommendedResponse.json();
+          
+          if (!recommendedResponse.ok) {
+            console.warn('Failed to fetch recommended deals:', recommendedData);
+            setRecommendedDeals([]);
+          } else {
             setRecommendedDeals(recommendedData.deals || []);
           }
         } catch (recErr) {
-          console.error('Failed to fetch recommended deals:', recErr);
+          console.error('Error fetching recommended deals:', recErr);
+          setRecommendedDeals([]); // Set empty array on error
         }
       } catch (err) {
         console.error('Error fetching deal:', err);
         setError(err instanceof Error ? err.message : 'Failed to load deal details. Please try again later.');
+        setDeal(null); // Clear any partially loaded deal
       } finally {
         setLoading(false);
       }
@@ -173,6 +200,7 @@ export default function DealDetailPage() {
                       src={deal.image}
                       alt={deal.title}
                       fill
+                      unoptimized={true}
                       sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-contain"
                       priority
@@ -186,6 +214,7 @@ export default function DealDetailPage() {
                       alt="No image available"
                       width={300}
                       height={300}
+                      unoptimized={true}
                       className="mx-auto"
                     />
                   )}
@@ -201,7 +230,7 @@ export default function DealDetailPage() {
                   </span>
                   
                   <span className="px-3 py-1 text-sm font-medium rounded-full bg-purple-100 text-purple-800">
-                    {deal.category}
+                    {typeof deal.category === 'string' ? deal.category : deal.category.name}
                   </span>
                   
                   {!isExpired ? (

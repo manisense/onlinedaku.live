@@ -23,8 +23,10 @@ const FreebieCard: React.FC<Freebie> = ({ title, image, store, link }) => {
             src={image}
             alt={title}
             fill
+            unoptimized={true}
             sizes="(max-width: 768px) 100vw, 25vw"
             className="object-contain"
+            loading="lazy"
             onError={(e) => {
               e.currentTarget.src = '/freebies.png';
             }}
