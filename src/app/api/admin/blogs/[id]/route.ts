@@ -43,8 +43,25 @@ export async function PUT(request: NextRequest, {params}:{ params: Promise<{id: 
     const { id } = await params;
     const body = await request.json();
     
+    console.log('Updating blog with ID:', id);
+    console.log('Request body received:', JSON.stringify({
+      title: body.title,
+      slug: body.slug,
+      coverImage: body.coverImage ? 'present' : 'not present',
+      contentLength: body.content ? body.content.length : 0,
+      excerpt: body.excerpt ? 'present' : 'not present',
+      tags: body.tags,
+      isPublished: body.isPublished
+    }));
+    
     // Validate required fields
     if (!body.title || !body.content || !body.slug || !body.excerpt) {
+      console.error('Missing required fields:', {
+        title: !body.title,
+        content: !body.content,
+        slug: !body.slug,
+        excerpt: !body.excerpt
+      });
       return NextResponse.json({ 
         success: false, 
         error: 'Title, slug, content, and excerpt are required' 
@@ -60,17 +77,36 @@ export async function PUT(request: NextRequest, {params}:{ params: Promise<{id: 
       }, { status: 400 });
     }
     
+    // Create an update object with all fields explicitly
+    const updateData = {
+      title: body.title,
+      slug: body.slug,
+      content: body.content,
+      excerpt: body.excerpt,
+      coverImage: body.coverImage,
+      tags: body.tags || [],
+      isPublished: body.isPublished || false,
+      updatedAt: new Date()
+    };
+    
+    console.log('Final update data:', JSON.stringify({
+      ...updateData,
+      content: updateData.content ? 'content present' : 'no content',
+    }));
+    
     // Update blog
     const updatedBlog = await Blog.findByIdAndUpdate(
       id,
-      { ...body },
+      updateData,
       { new: true, runValidators: true }
     );
     
     if (!updatedBlog) {
+      console.error('Blog not found with ID:', id);
       return NextResponse.json({ success: false, error: 'Blog not found' }, { status: 404 });
     }
     
+    console.log('Blog updated successfully:', updatedBlog._id);
     return NextResponse.json({ success: true, data: updatedBlog }, { status: 200 });
   } catch (error) {
     console.error('Error updating blog:', error);

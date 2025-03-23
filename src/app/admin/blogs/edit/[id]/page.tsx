@@ -92,10 +92,23 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    console.log(`Field ${name} changed to: ${name === 'coverImage' ? 'image URL' : value.substring(0, 30) + '...'}`);
+    
+    // Additional validation for coverImage
+    if (name === 'coverImage') {
+      // Ensure the URL is valid or empty
+      if (!value || value.match(/^(http|https):\/\/[^ "]+$/)) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      } else {
+        toast.error('Please enter a valid image URL or leave it empty');
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleContentChange = (content: string) => {
+    console.log('Content changed, new length:', content.length);
     setFormData(prev => ({ ...prev, content }));
   };
 
@@ -145,6 +158,17 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
       setSubmitting(true);
       const token = localStorage.getItem('adminToken');
       
+      // Log the data being sent
+      console.log('Submitting blog update with data:', {
+        title: formData.title,
+        slug: formData.slug,
+        contentLength: formData.content.length,
+        excerpt: formData.excerpt.substring(0, 50) + '...',
+        coverImage: formData.coverImage ? 'provided' : 'not provided',
+        tags: formData.tags,
+        isPublished: formData.isPublished
+      });
+      
       const response = await fetch(`/api/admin/blogs/${id}`, {
         method: 'PUT',
         headers: {
@@ -164,6 +188,9 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
       
       // Update original blog state with current data
       setOriginalBlog({ ...formData });
+      
+      // Force reload the blog to show the updated content
+      fetchBlog();
       
     } catch (error) {
       console.error('Error updating blog post:', error);

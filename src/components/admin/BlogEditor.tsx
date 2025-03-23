@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, memo } from 'react';
+import { useCallback, memo, useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -27,6 +27,14 @@ function BlogEditor({ initialContent, onChange }: BlogEditorProps) {
       onChange(editor.getHTML());
     },
   });
+
+  // Update editor content when initialContent changes (e.g., when loading a blog post)
+  useEffect(() => {
+    if (editor && initialContent !== editor.getHTML()) {
+      console.log('BlogEditor: Updating editor content from prop');
+      editor.commands.setContent(initialContent);
+    }
+  }, [editor, initialContent]);
 
   const setLink = useCallback(() => {
     if (!editor) return;

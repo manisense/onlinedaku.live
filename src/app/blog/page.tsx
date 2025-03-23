@@ -33,7 +33,7 @@ export default async function BlogPage() {
   return (
     <MainLayout>
       <SearchBar />
-      <div className="container mx-auto px-4 py-16">
+      <div className="container text-gray-900 mx-auto px-4 py-16">
         <h1 className="text-3xl font-bold mb-2">Blog</h1>
         <p className="text-gray-600 mb-8">Latest articles, guides, and updates</p>
         
@@ -58,18 +58,6 @@ export default async function BlogPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg shadow-md p-6 text-white">
-              <h3 className="text-lg font-semibold mb-3">Latest Deals</h3>
-              <p className="mb-4 text-sm opacity-90">
-                Dont miss out on our exclusive deals and discounts!
-              </p>
-              <Link
-                href="/deals"
-                className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg inline-flex items-center transition-all duration-200"
-              >
-                View all deals
-              </Link>
-            </div>
           </div>
         </div>
       </div>
