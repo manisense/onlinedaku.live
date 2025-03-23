@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 interface Category {
   _id: string;
@@ -24,10 +25,29 @@ export default function CategoryFilter({ className = '' }: CategoryFilterProps) 
   const [error, setError] = useState('');
   const [parentCategories, setParentCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // Set initial collapse state based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCollapsed(window.innerWidth < 768);
+    };
+    
+    // Set initial state
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -77,6 +97,11 @@ export default function CategoryFilter({ className = '' }: CategoryFilterProps) 
     
     // Update selected category
     setSelectedCategory(slug);
+    
+    // On mobile, collapse the filter after selection
+    if (window.innerWidth < 768) {
+      setIsCollapsed(true);
+    }
   };
 
   const clearFilter = () => {
@@ -94,6 +119,10 @@ export default function CategoryFilter({ className = '' }: CategoryFilterProps) 
     
     // Clear selected category
     setSelectedCategory(null);
+  };
+
+  const toggleCollapse = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
   if (loading) {
@@ -123,9 +152,19 @@ export default function CategoryFilter({ className = '' }: CategoryFilterProps) 
 
   return (
     <div className={`${className} p-4 bg-white text-gray-800 rounded-lg shadow-md`}>
-      <h3 className="text-lg font-semibold mb-3">Categories</h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-lg font-semibold">Categories</h3>
+        <button 
+          onClick={toggleCollapse}
+          className="md:hidden text-gray-500 hover:text-gray-700 transition-colors"
+          aria-expanded={!isCollapsed}
+          aria-label={isCollapsed ? "Expand categories" : "Collapse categories"}
+        >
+          {isCollapsed ? <FaChevronDown /> : <FaChevronUp />}
+        </button>
+      </div>
       
-      <div className="space-y-2">
+      <div className={`space-y-2 ${isCollapsed ? 'hidden md:block' : 'block'}`}>
         {selectedCategory && (
           <button
             onClick={clearFilter}
