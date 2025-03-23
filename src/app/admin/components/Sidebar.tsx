@@ -118,7 +118,7 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       {/* Overlay to close mobile sidebar */}
       {isMobileMenuOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-gray-600 bg-opacity-50 z-20"
+          className="lg:hidden fixed inset-0 text-gray-900 bg-gray-600 bg-opacity-50 z-20"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
