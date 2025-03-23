@@ -343,7 +343,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
                 <FaTags className="mr-1" /> Tags
               </label>
               <div className="flex">

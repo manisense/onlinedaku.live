@@ -48,7 +48,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{slug: 
 
   return (
     <MainLayout>
-      <div className="bg-gray-50">
+      <div className="bg-gray-50 text-gray-800">
         {/* Hero section */}
         <div className="relative w-full h-96 bg-gray-800">
           {blog.coverImage ? (
@@ -66,12 +66,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{slug: 
           <div className="container mx-auto px-4 h-full flex flex-col justify-center relative z-10">
             <div className="max-w-3xl mx-auto text-center text-white">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">{blog.title}</h1>
-              <div className="flex items-center justify-center text-sm space-x-4 mt-6">
+              <div className="flex text-white items-center justify-center text-sm space-x-4 mt-6">
                 <span>
                   {dayjs(blog.createdAt).format('MMMM D, YYYY')}
                 </span>
                 <span>•</span>
-                <span>
+                <span className='text-white'>
                   {blog.author?.name || 'Online Daku Team'}
                 </span>
               </div>
@@ -87,7 +87,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{slug: 
                 <Link 
                   key={tag} 
                   href={`/blog?tag=${encodeURIComponent(tag)}`}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm transition-colors"
+                  className="bg-gray-100 hover:bg-gray-800 text-gray-900 px-3 py-1 rounded-full text-sm transition-colors"
                 >
                   {tag}
                 </Link>
@@ -112,7 +112,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{slug: 
                 <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
                   {blog.author?.name?.charAt(0) || 'A'}
                 </div>
-                <div className="ml-4">
+                <div className="ml-4 text-violet-950">
                   <h3 className="font-semibold">{blog.author?.name || 'Online Daku Team'}</h3>
                   <p className="text-gray-600 text-sm">Content Creator</p>
                 </div>
