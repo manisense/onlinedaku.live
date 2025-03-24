@@ -8,6 +8,7 @@ export const maxDuration = 60;
 
 export async function GET(req: NextRequest) {
   try {
+    // Ensure database connection is established before proceeding
     await dbConnect();
     console.log('Connected to database for deals fetch');
     

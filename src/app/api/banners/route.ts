@@ -4,6 +4,7 @@ import Banner from '@/models/Banner';
 
 export async function GET() {
   try {
+    // Ensure database connection is established before proceeding
     await dbConnect();
 
     // Fetch only active banners and sort by displayOrder

@@ -15,6 +15,7 @@ interface FreebieQuery {
 
 export async function GET(request: Request) {
   try {
+    // Ensure database connection is established before proceeding
     await dbConnect();
 
     const { searchParams } = new URL(request.url);

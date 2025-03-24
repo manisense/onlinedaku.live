@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
 
+    // Ensure database connection is established before proceeding
     await dbConnect();
 
     interface q {
