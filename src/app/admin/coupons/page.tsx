@@ -78,28 +78,28 @@ export default function CouponsPage() {
       {loading ? (
          <Loader size='large'  text='Loading...' />
       ) : (
-        <div className="bg-white text-gray-800 rounded-lg shadow overflow-hidden">
+        <div className="bg-white text-gray-800 rounded-lg shadow overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Store</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Store</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {coupons.map((coupon) => (
-                <tr key={coupon._id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{coupon.title}</td>
-                  <td className="px-6 py-4 whitespace-nowrap capitalize">{coupon.type}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {coupon.type === 'couponcode' ? coupon.code : 'Offer Activated'}
+                <tr key={coupon._id} className="hover:bg-gray-50">
+                  <td className="px-3 py-2 text-sm max-w-[120px] truncate">{coupon.title}</td>
+                  <td className="px-3 py-2 text-sm whitespace-nowrap capitalize">{coupon.type}</td>
+                  <td className="px-3 py-2 text-sm whitespace-nowrap">
+                    {coupon.type === 'couponcode' ? <span className="font-mono">{coupon.code}</span> : 'Offer Activated'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{coupon.store}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 text-sm whitespace-nowrap">{coupon.store}</td>
+                  <td className="px-3 py-2 text-sm whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         coupon.isActive
@@ -110,19 +110,21 @@ export default function CouponsPage() {
                       {coupon.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleToggleStatus(coupon._id, coupon.isActive)}
-                      className="text-indigo-600 hover:text-indigo-900 mr-4"
-                    >
-                      {coupon.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
-                    <Link
-                      href={`/admin/coupons/edit/${coupon._id}`}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      Edit
-                    </Link>
+                  <td className="px-3 py-2 text-sm">
+                    <div className="flex flex-wrap gap-1">
+                      <button
+                        onClick={() => handleToggleStatus(coupon._id, coupon.isActive)}
+                        className="text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded text-xs inline-flex items-center"
+                      >
+                        {coupon.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <Link
+                        href={`/admin/coupons/edit/${coupon._id}`}
+                        className="text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs inline-flex items-center"
+                      >
+                        Edit
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -130,47 +132,27 @@ export default function CouponsPage() {
           </table>
 
           {totalPages > 1 && (
-            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-              <div className="flex-1 flex justify-between sm:hidden">
-                <button
-                  onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  Next
-                </button>
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Showing page <span className="font-medium">{currentPage}</span> of{' '}
-                    <span className="font-medium">{totalPages}</span>
-                  </p>
+            <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
+              <div className="flex justify-between w-full">
+                <div className="text-sm text-gray-700">
+                  Page <span className="font-medium">{currentPage}</span> of{' '}
+                  <span className="font-medium">{totalPages}</span>
                 </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <button
-                      onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                      className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                    >
-                      Next
-                    </button>
-                  </nav>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(page => Math.min(page + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border border-gray-300 rounded-md text-sm bg-white disabled:opacity-50" 
+                  >
+                    Next
+                  </button>
                 </div>
               </div>
             </div>

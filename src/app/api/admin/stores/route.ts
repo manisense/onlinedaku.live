@@ -77,16 +77,32 @@ export async function GET(request: NextRequest) {
     
     const searchParams = request.nextUrl.searchParams;
     const activeOnly = searchParams.get('activeOnly') === 'true';
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const skip = (page - 1) * limit;
+    
     const query = activeOnly ? { isActive: true } : {};
     
+    // Get total count for pagination
+    const totalStores = await Store.countDocuments(query);
+    
+    // Get stores with pagination
     const stores = await Store.find(query)
-      .select('_id name slug logo isActive')
+      .select('_id name slug logo website isActive createdAt')
       .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit)
       .lean();
     
     return NextResponse.json({
       success: true,
-      data: stores
+      stores: stores,
+      pagination: {
+        total: totalStores,
+        currentPage: page,
+        totalPages: Math.ceil(totalStores / limit),
+        hasMore: page * limit < totalStores
+      }
     });
   } catch (error) {
     console.error('Error fetching stores:', error);
