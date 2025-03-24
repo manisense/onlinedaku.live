@@ -5,6 +5,7 @@ import MainLayout from '@/components/Layout/MainLayout';
 import CouponCard from '@/components/CouponCard';
 import Loader from '@/components/ui/Loader';
 import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
+import SearchBar from '@/components/Search/SearchBar';
 
 interface Coupon {
   _id: string;
@@ -148,45 +149,14 @@ export default function CouponsPage() {
 
   return (
     <MainLayout>
+      <SearchBar />
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Latest Coupons & Deals</h1>
             <p className="text-gray-600 mb-6">Find the best coupons and deals from your favorite stores.</p>
             
-            {/* Search and Filter Controls */}
-            <div className="flex flex-col md:flex-row gap-4 mb-8">
-              <form onSubmit={handleSearch} className="flex-grow">
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search for deals..." 
-                    className="w-full px-4 py-2 pl-10 pr-4 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaSearch className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <button 
-                    type="submit" 
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  >
-                    <span className="sr-only">Search</span>
-                    <FaSearch className="h-4 w-4 text-indigo-600" />
-                  </button>
-                </div>
-              </form>
-              
-              <button 
-                type="button"
-                onClick={() => setFilterOpen(!filterOpen)}
-                className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 md:w-auto"
-              >
-                <FaFilter className="h-4 w-4 mr-2" />
-                Filters
-              </button>
-            </div>
+          
             
             {/* Expanded Filter Options */}
             {filterOpen && (
