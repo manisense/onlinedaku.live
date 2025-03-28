@@ -40,11 +40,24 @@ export async function getBlogPosts(options: BlogQueryOptions = {}) {
     // Get all unique tags
     const tags = await Blog.distinct('tags', { isPublished: true });
 
-    return {
+    // Add cache tag header for revalidation
+    // This is a custom header we'll use for the fetch API
+    const result = {
       blogs: JSON.parse(JSON.stringify(blogs)),
       totalPages: Math.ceil(totalCount / limit),
       tags
     };
+
+    // Mark this data with a tag for revalidation
+    fetch('/api/set-cache-tag', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ tag: 'blog-data' }),
+    }).catch(err => console.error('Failed to set cache tag:', err));
+
+    return result;
   } catch (error) {
     console.error('Error fetching blogs:', error);
     return {
@@ -81,10 +94,21 @@ export async function getBlogData(slug: string) {
       .select('title slug excerpt coverImage')
       .lean();
     
-    return {
+    const result = {
       blog: JSON.parse(JSON.stringify(blog)),
       relatedBlogs: JSON.parse(JSON.stringify(relatedBlogs))
     };
+
+    // Mark this data with a tag for revalidation
+    fetch('/api/set-cache-tag', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ tag: `blog-${slug}` }),
+    }).catch(err => console.error('Failed to set cache tag:', err));
+
+    return result;
   } catch (error) {
     console.error('Error fetching blog data:', error);
     return { blog: null, relatedBlogs: [] };

@@ -84,19 +84,20 @@ export async function POST(request: NextRequest) {
     
     // Trigger revalidation
     try {
-      const revalidateRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': request.headers.get('Authorization') || ''
-        },
-        body: JSON.stringify({
-          path: '/blog'
-        })
+      const revalidateUrl = new URL(
+        `/api/revalidate-blogs?token=${process.env.REVALIDATION_SECRET}`,
+        process.env.NEXT_PUBLIC_APP_URL
+      ).toString();
+      
+      const revalidateRes = await fetch(revalidateUrl, {
+        method: 'GET',
+        cache: 'no-store',
       });
       
       if (!revalidateRes.ok) {
         console.error('Revalidation failed:', await revalidateRes.text());
+      } else {
+        console.log('Blog revalidation successful after creation');
       }
     } catch (revalidateError) {
       console.error('Error triggering revalidation:', revalidateError);

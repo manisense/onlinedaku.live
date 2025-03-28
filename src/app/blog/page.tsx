@@ -5,6 +5,9 @@ import SearchBar from "@/components/Search/SearchBar";
 import BlogList from '@/components/blog/BlogList';
 import { getBlogPosts } from "@/lib/blogUtils"; // This should now resolve correctly
 
+// Force dynamic rendering for this page to ensure fresh data
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Blog - Online Daku",
   description: "Latest articles, guides, and updates from Online Daku",

@@ -8,7 +8,7 @@ export async function GET(request: NextRequest, {params}:{ params: Promise<{id: 
   try {
     // Verify admin token
     console.log('Incoming headers:', request.headers);
-  console.log('Request URL:', request.url);
+    console.log('Request URL:', request.url);
     const admin = await verifyToken(request);
     if (!admin) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
@@ -108,31 +108,20 @@ export async function PUT(request: NextRequest, {params}:{ params: Promise<{id: 
     
     // Trigger revalidation
     try {
-      const revalidateRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': request.headers.get('Authorization') || ''
-        },
-        body: JSON.stringify({
-          path: '/blog'
-        })
+      const revalidateUrl = new URL(
+        `/api/revalidate-blogs?token=${process.env.REVALIDATION_SECRET}`,
+        process.env.NEXT_PUBLIC_APP_URL
+      ).toString();
+      
+      const revalidateRes = await fetch(revalidateUrl, {
+        method: 'GET',
+        cache: 'no-store',
       });
       
-      // Also revalidate the specific blog page
-      const revalidateSpecificBlog = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': request.headers.get('Authorization') || ''
-        },
-        body: JSON.stringify({
-          path: `/blog/${updatedBlog.slug}`
-        })
-      });
-      
-      if (!revalidateRes.ok || !revalidateSpecificBlog.ok) {
-        console.error('Revalidation failed for some paths');
+      if (!revalidateRes.ok) {
+        console.error('Revalidation failed:', await revalidateRes.text());
+      } else {
+        console.log('Blog revalidation successful after update');
       }
     } catch (revalidateError) {
       console.error('Error triggering revalidation:', revalidateError);
@@ -166,19 +155,20 @@ export async function DELETE(request: NextRequest, {params}:{ params: Promise<{i
     
     // Trigger revalidation
     try {
-      const revalidateRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': request.headers.get('Authorization') || ''
-        },
-        body: JSON.stringify({
-          path: '/blog'
-        })
+      const revalidateUrl = new URL(
+        `/api/revalidate-blogs?token=${process.env.REVALIDATION_SECRET}`,
+        process.env.NEXT_PUBLIC_APP_URL
+      ).toString();
+      
+      const revalidateRes = await fetch(revalidateUrl, {
+        method: 'GET',
+        cache: 'no-store',
       });
       
       if (!revalidateRes.ok) {
         console.error('Revalidation failed:', await revalidateRes.text());
+      } else {
+        console.log('Blog revalidation successful after deletion');
       }
     } catch (revalidateError) {
       console.error('Error triggering revalidation:', revalidateError);
