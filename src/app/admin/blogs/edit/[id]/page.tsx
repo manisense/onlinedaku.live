@@ -11,7 +11,7 @@ interface BlogForm {
   title: string;
   slug: string;
   content: string;
-  excerpt: string;
+  excerpt?: string;
   coverImage: string;
   tags: string[];
   isPublished: boolean;
@@ -66,7 +66,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
         title: blog.title,
         slug: blog.slug,
         content: blog.content,
-        excerpt: blog.excerpt,
+        excerpt: blog.excerpt || '',
         coverImage: blog.coverImage || '',
         tags: blog.tags || [],
         isPublished: blog.isPublished
@@ -75,7 +75,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
         title: blog.title,
         slug: blog.slug,
         content: blog.content,
-        excerpt: blog.excerpt,
+        excerpt: blog.excerpt || '',
         coverImage: blog.coverImage || '',
         tags: blog.tags || [],
         isPublished: blog.isPublished
@@ -149,7 +149,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.slug || !formData.content || !formData.excerpt) {
+    if (!formData.title || !formData.slug || !formData.content) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -158,15 +158,21 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
       setSubmitting(true);
       const token = localStorage.getItem('adminToken');
       
+      // Generate excerpt if needed
+      const submitData = {
+        ...formData,
+        excerpt: formData.excerpt || formData.content.substring(0, 150).replace(/<[^>]*>/g, '') + '...'
+      };
+      
       // Log the data being sent
       console.log('Submitting blog update with data:', {
-        title: formData.title,
-        slug: formData.slug,
-        contentLength: formData.content.length,
-        excerpt: formData.excerpt.substring(0, 50) + '...',
-        coverImage: formData.coverImage ? 'provided' : 'not provided',
-        tags: formData.tags,
-        isPublished: formData.isPublished
+        title: submitData.title,
+        slug: submitData.slug,
+        contentLength: submitData.content.length,
+        excerpt: submitData.excerpt.substring(0, 50) + '...',
+        coverImage: submitData.coverImage ? 'provided' : 'not provided',
+        tags: submitData.tags,
+        isPublished: submitData.isPublished
       });
       
       const response = await fetch(`/api/admin/blogs/${id}`, {
@@ -175,7 +181,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
       
       const data = await response.json();
@@ -187,7 +193,7 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
       toast.success('Blog post updated successfully');
       
       // Update original blog state with current data
-      setOriginalBlog({ ...formData });
+      setOriginalBlog({ ...submitData });
       
       // Force reload the blog to show the updated content
       fetchBlog();
@@ -207,7 +213,6 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
       formData.title !== originalBlog.title ||
       formData.slug !== originalBlog.slug ||
       formData.content !== originalBlog.content ||
-      formData.excerpt !== originalBlog.excerpt ||
       formData.coverImage !== originalBlog.coverImage ||
       formData.isPublished !== originalBlog.isPublished ||
       JSON.stringify(formData.tags) !== JSON.stringify(originalBlog.tags)
@@ -316,21 +321,6 @@ export default function EditBlogPost({ params }: { params: Promise<{ id: string 
               <p className="mt-1 text-sm text-gray-500">
                 The slug will be used in the URL: /blog/{formData.slug || 'example-slug'}
               </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Excerpt <span className="text-red-500">*</span>
-                <span className="text-xs font-normal text-gray-500 ml-1">(Brief summary, shown in blog lists)</span>
-              </label>
-              <textarea
-                name="excerpt"
-                value={formData.excerpt}
-                onChange={handleChange}
-                rows={3}
-                className="w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                required
-              />
             </div>
             
             <div>

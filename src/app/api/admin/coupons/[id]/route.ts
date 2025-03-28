@@ -5,11 +5,11 @@ import CouponModel from '@/models/Coupon';
 // Get a single coupon by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ success: false, message: 'Coupon ID is required' }, { status: 400 });
@@ -38,11 +38,11 @@ export async function GET(
 // Update a coupon by ID
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     console.log('Received update data:', data);
@@ -128,11 +128,11 @@ export async function PUT(
 // Partially update a coupon (e.g., toggle active status)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
     const data = await request.json();
 
     if (!id) {
@@ -173,11 +173,11 @@ export async function PATCH(
 // Delete a coupon by ID
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ success: false, message: 'Coupon ID is required' }, { status: 400 });

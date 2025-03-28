@@ -12,7 +12,7 @@ interface BlogForm {
   title: string;
   slug: string;
   content: string;
-  excerpt: string;
+  excerpt?: string;
   coverImage: string;
   tags: string[];
   isPublished: boolean;
@@ -79,7 +79,7 @@ export default function CreateBlogPost() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.slug || !formData.content || !formData.excerpt) {
+    if (!formData.title || !formData.slug || !formData.content) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -88,13 +88,18 @@ export default function CreateBlogPost() {
       setSubmitting(true);
       const token = localStorage.getItem('adminToken');
       
+      const submitData = {
+        ...formData,
+        excerpt: formData.content.substring(0, 150).replace(/<[^>]*>/g, '') + '...'
+      };
+      
       const response = await fetch('/api/admin/blogs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
       
       const data = await response.json();
@@ -194,21 +199,6 @@ export default function CreateBlogPost() {
                 <p className="mt-1 text-sm text-gray-500">
                   The slug will be used in the URL: /blog/{formData.slug || 'example-slug'}
                 </p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Excerpt <span className="text-red-500">*</span>
-                  <span className="text-xs font-normal text-gray-500 ml-1">(Brief summary, shown in blog lists)</span>
-                </label>
-                <textarea
-                  name="excerpt"
-                  value={formData.excerpt}
-                  onChange={handleChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
               </div>
               
               <div>

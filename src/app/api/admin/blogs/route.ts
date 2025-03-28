@@ -60,11 +60,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     
     // Validate required fields
-    if (!body.title || !body.content || !body.slug || !body.excerpt) {
+    if (!body.title || !body.content || !body.slug) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Title, slug, content, and excerpt are required' 
+        error: 'Title, slug, and content are required' 
       }, { status: 400 });
+    }
+    
+    // Ensure excerpt is generated if not provided
+    if (!body.excerpt) {
+      // Extract first 150 characters from content, strip HTML tags, and add ellipsis
+      body.excerpt = body.content.substring(0, 150).replace(/<[^>]*>/g, '') + '...';
     }
     
     // Check for slug uniqueness
