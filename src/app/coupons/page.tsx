@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import CouponCard from '@/components/CouponCard';
 import Loader from '@/components/ui/Loader';
-import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 import SearchBar from '@/components/Search/SearchBar';
 
 interface Coupon {
@@ -133,11 +133,11 @@ export default function CouponsPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPage(1); // Reset to first page on search
-    fetchCoupons();
-  };
+  // const handleSearch = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setPage(1); // Reset to first page on search
+  //   fetchCoupons();
+  // };
 
   const clearFilters = () => {
     setSelectedCategory('All');
