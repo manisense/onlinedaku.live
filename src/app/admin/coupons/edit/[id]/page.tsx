@@ -33,6 +33,7 @@ interface Coupon {
   label: string;
   rating: number;
   isActive: boolean;
+  offerId?: string;
 }
 
 export default function EditCouponPage() {
@@ -113,18 +114,18 @@ export default function EditCouponPage() {
             title: data.data.title || '',
             description: data.data.description || '',
             code: data.data.code || '',
-            type: data.data.type || '',
+            type: data.data.type || 'Code',
             storeId: data.data.storeId || '',
-            storeName: data.data.storeName || '',
+            storeName: data.data.store || '',
             storeSlug: data.data.storeSlug || '',
             url: data.data.url || '',
             affiliateLink: data.data.affiliateLink || '',
             imageUrl: data.data.imageUrl || '',
             brandLogo: data.data.brandLogo || '',
             label: data.data.label || '',
-            featured: data.data.featured || false,
+            featured: Boolean(data.data.featured),
             status: data.data.status || 'active',
-            isActive: data.data.isActive || true,
+            isActive: typeof data.data.isActive === 'boolean' ? data.data.isActive : true,
             startDate,
             endDate,
             rating: data.data.rating || 5
@@ -146,6 +147,7 @@ export default function EditCouponPage() {
     async function fetchStoresData() {
       try {
         setLoadingStores(true);
+        console.log('Fetching stores data...');
         const res = await fetch('/api/admin/stores');
         
         if (!res.ok) {
@@ -153,8 +155,13 @@ export default function EditCouponPage() {
         }
         
         const data = await res.json();
+        console.log('Stores API response:', data);
+        
         if (data.success) {
-          setStores(data.data);
+          console.log('Setting stores:', data.stores);
+          setStores(data.stores);
+        } else {
+          console.warn('Invalid stores data format:', data);
         }
       } catch (error) {
         console.error('Error fetching stores:', error);
@@ -169,7 +176,26 @@ export default function EditCouponPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'storeId' && value) {
+      // If store is selected, update store-related fields
+      const selectedStore = stores && Array.isArray(stores) ? 
+        stores.find(store => store._id === value) : null;
+      
+      if (selectedStore) {
+        setFormData(prev => ({ 
+          ...prev, 
+          [name]: value,
+          storeName: selectedStore.name,
+          storeSlug: selectedStore.slug
+        }));
+      } else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+    
     // Clear error when user starts typing
     if (errors[name as keyof typeof errors]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
@@ -178,6 +204,8 @@ export default function EditCouponPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submission started');
+    console.log('Current form data:', formData);
 
     // Validate form data
     const newErrors = { ...errors };
@@ -188,8 +216,8 @@ export default function EditCouponPage() {
       hasErrors = true;
     }
 
-    if (!formData.code) {
-      newErrors.code = 'Code is required';
+    if (!formData.code && formData.type === 'Code') {
+      newErrors.code = 'Code is required for coupon codes';
       hasErrors = true;
     }
 
@@ -212,25 +240,66 @@ export default function EditCouponPage() {
     setErrors(newErrors);
 
     if (hasErrors) {
+      console.log('Validation errors:', newErrors);
       return;
     }
 
     try {
       setLoading(true);
+      console.log('Preparing submission data...');
+      
+      // Get store info if storeId is selected
+      const selectedStore = stores && Array.isArray(stores) && formData.storeId ? 
+        stores.find(store => store._id === formData.storeId) : null;
+      
+      console.log('Selected store:', selectedStore);
+
+      // Prepare data for submission, mapping fields correctly
+      const couponData = {
+        offerId: coupon?.offerId || `admin-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        title: formData.title,
+        description: formData.description || '',
+        code: formData.code || '',
+        type: formData.type,
+        store: selectedStore?.name || formData.storeName || '',
+        storeId: formData.storeId,
+        storeSlug: selectedStore?.slug || formData.storeSlug || '',
+        url: formData.url || '',
+        affiliateLink: formData.affiliateLink || '',
+        imageUrl: formData.imageUrl || '',
+        brandLogo: formData.brandLogo || '',
+        label: formData.label || '',
+        featured: formData.featured,
+        status: formData.status,
+        isActive: formData.isActive,
+        startDate: formData.startDate ? new Date(formData.startDate) : null,
+        endDate: formData.endDate ? new Date(formData.endDate) : null,
+        rating: Number(formData.rating) || 5
+      };
+
+      // Log the data being sent for debugging
+      console.log('Submitting coupon update:', couponData);
+
+      console.log('Sending API request...');
       const res = await fetch(`/api/admin/coupons/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(couponData)
       });
 
+      console.log('API Response status:', res.status);
+      const data = await res.json();
+      console.log('API Response data:', data);
+      
       if (!res.ok) {
-        throw new Error('Failed to update coupon');
+        console.error('Error response:', data);
+        throw new Error(data.message || 'Failed to update coupon');
       }
 
-      const data = await res.json();
       if (data.success) {
+        console.log('Update successful, redirecting...');
         toast.success('Coupon updated successfully');
         router.push('/admin/coupons');
       } else {
@@ -238,7 +307,7 @@ export default function EditCouponPage() {
       }
     } catch (error) {
       console.error('Error updating coupon:', error);
-      toast.error('Failed to update coupon');
+      toast.error(error instanceof Error ? error.message : 'Failed to update coupon');
     } finally {
       setLoading(false);
     }
@@ -294,7 +363,7 @@ export default function EditCouponPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 text-gray-900" >
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Edit Coupon</h1>
         <button
@@ -367,7 +436,7 @@ export default function EditCouponPage() {
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
             >
               <option value="">Select a store</option>
-              {stores.map(store => (
+              {stores && Array.isArray(stores) && stores.map(store => (
                 <option key={store._id} value={store._id}>
                   {store.name}
                 </option>
@@ -528,7 +597,7 @@ export default function EditCouponPage() {
       </form>
 
       {deleteModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 text-gray-900  flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg">
             <h2 className="text-xl font-bold mb-4">Delete Coupon</h2>
             <p className="mb-4">Are you sure you want to delete this coupon? This action cannot be undone.</p>

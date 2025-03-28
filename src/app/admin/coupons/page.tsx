@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import Loader from '@/components/ui/Loader';
+import { toast } from 'react-hot-toast';
 
 interface Coupon {
   _id: string;
@@ -20,8 +21,11 @@ interface Coupon {
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [couponToDelete, setCouponToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCoupons();
@@ -41,6 +45,7 @@ export default function CouponsPage() {
       }
     } catch (error) {
       console.error('Error fetching coupons:', error);
+      toast.error('Failed to fetch coupons');
     } finally {
       setLoading(false);
     }
@@ -48,6 +53,7 @@ export default function CouponsPage() {
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
     try {
+      setActionLoading(id);
       const response = await fetch(`/api/admin/coupons/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -55,10 +61,48 @@ export default function CouponsPage() {
       });
 
       if (response.ok) {
-        fetchCoupons();
+        toast.success(`Coupon ${currentStatus ? 'deactivated' : 'activated'} successfully`);
+        await fetchCoupons();
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || 'Operation failed');
       }
     } catch (error) {
       console.error('Error toggling coupon status:', error);
+      toast.error('Failed to update coupon status');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const openDeleteModal = (id: string) => {
+    setCouponToDelete(id);
+    setDeleteModalOpen(true);
+  };
+
+  const handleDelete = async () => {
+    if (!couponToDelete) return;
+    
+    try {
+      setActionLoading(couponToDelete);
+      const response = await fetch(`/api/admin/coupons/${couponToDelete}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        toast.success('Coupon deleted successfully');
+        await fetchCoupons();
+      } else {
+        const data = await response.json();
+        throw new Error(data.message || 'Operation failed');
+      }
+    } catch (error) {
+      console.error('Error deleting coupon:', error);
+      toast.error('Failed to delete coupon');
+    } finally {
+      setActionLoading(null);
+      setDeleteModalOpen(false);
+      setCouponToDelete(null);
     }
   };
 
@@ -114,16 +158,24 @@ export default function CouponsPage() {
                     <div className="flex flex-wrap gap-1">
                       <button
                         onClick={() => handleToggleStatus(coupon._id, coupon.isActive)}
-                        className="text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded text-xs inline-flex items-center"
+                        disabled={actionLoading === coupon._id}
+                        className={`text-white ${coupon.isActive ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'} px-2 py-1 rounded text-xs inline-flex items-center disabled:opacity-70`}
                       >
-                        {coupon.isActive ? 'Deactivate' : 'Activate'}
+                        {actionLoading === coupon._id ? 'Processing...' : coupon.isActive ? 'Deactivate' : 'Activate'}
                       </button>
                       <Link
                         href={`/admin/coupons/edit/${coupon._id}`}
-                        className="text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs inline-flex items-center"
+                        className="text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs inline-flex items-center gap-1"
                       >
-                        Edit
+                        <FaEdit size={10} /> Edit
                       </Link>
+                      <button
+                        onClick={() => openDeleteModal(coupon._id)}
+                        disabled={actionLoading === coupon._id}
+                        className="text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs inline-flex items-center gap-1 disabled:opacity-70"
+                      >
+                        <FaTrash size={10} /> Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -157,6 +209,34 @@ export default function CouponsPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 text-gray-900 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirm Delete</h3>
+            <p className="mb-6">Are you sure you want to delete this coupon? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setDeleteModalOpen(false);
+                  setCouponToDelete(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={actionLoading === couponToDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-70"
+              >
+                {actionLoading === couponToDelete ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
