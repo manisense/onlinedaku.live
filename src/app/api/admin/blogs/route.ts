@@ -82,6 +82,26 @@ export async function POST(request: NextRequest) {
       author: admin._id
     });
     
+    // Trigger revalidation
+    try {
+      const revalidateRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': request.headers.get('Authorization') || ''
+        },
+        body: JSON.stringify({
+          path: '/blog'
+        })
+      });
+      
+      if (!revalidateRes.ok) {
+        console.error('Revalidation failed:', await revalidateRes.text());
+      }
+    } catch (revalidateError) {
+      console.error('Error triggering revalidation:', revalidateError);
+    }
+    
     return NextResponse.json({ success: true, data: newBlog }, { status: 201 });
   } catch (error) {
     console.error('Error creating blog:', error);

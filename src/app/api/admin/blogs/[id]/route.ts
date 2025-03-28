@@ -106,6 +106,38 @@ export async function PUT(request: NextRequest, {params}:{ params: Promise<{id: 
       return NextResponse.json({ success: false, error: 'Blog not found' }, { status: 404 });
     }
     
+    // Trigger revalidation
+    try {
+      const revalidateRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': request.headers.get('Authorization') || ''
+        },
+        body: JSON.stringify({
+          path: '/blog'
+        })
+      });
+      
+      // Also revalidate the specific blog page
+      const revalidateSpecificBlog = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': request.headers.get('Authorization') || ''
+        },
+        body: JSON.stringify({
+          path: `/blog/${updatedBlog.slug}`
+        })
+      });
+      
+      if (!revalidateRes.ok || !revalidateSpecificBlog.ok) {
+        console.error('Revalidation failed for some paths');
+      }
+    } catch (revalidateError) {
+      console.error('Error triggering revalidation:', revalidateError);
+    }
+    
     console.log('Blog updated successfully:', updatedBlog._id);
     return NextResponse.json({ success: true, data: updatedBlog }, { status: 200 });
   } catch (error) {
@@ -130,6 +162,26 @@ export async function DELETE(request: NextRequest, {params}:{ params: Promise<{i
     
     if (!deletedBlog) {
       return NextResponse.json({ success: false, error: 'Blog not found' }, { status: 404 });
+    }
+    
+    // Trigger revalidation
+    try {
+      const revalidateRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/revalidate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': request.headers.get('Authorization') || ''
+        },
+        body: JSON.stringify({
+          path: '/blog'
+        })
+      });
+      
+      if (!revalidateRes.ok) {
+        console.error('Revalidation failed:', await revalidateRes.text());
+      }
+    } catch (revalidateError) {
+      console.error('Error triggering revalidation:', revalidateError);
     }
     
     return NextResponse.json({ success: true, message: 'Blog deleted successfully' }, { status: 200 });
